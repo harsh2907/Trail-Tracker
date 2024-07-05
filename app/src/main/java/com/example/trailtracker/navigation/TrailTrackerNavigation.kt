@@ -12,7 +12,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.trailtracker.mainScreen.MainScreen
+import com.example.trailtracker.mainScreen.presentation.MainScreen
 import com.example.trailtracker.onboarding.presentation.OnBoardingScreen
 import com.example.trailtracker.onboardingDetails.presentation.OnBoardingViewModel
 import com.example.trailtracker.onboardingDetails.presentation.OnboardingDetailsScreen

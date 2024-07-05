@@ -1,4 +1,4 @@
-package com.example.trailtracker.mainScreen.screens.profile.presentation
+package com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,12 +9,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @Composable
-fun ProfileScreen() {
+fun StatisticsScreen() {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Profile Screen")
+        Text(text = "Statistics Screen")
     }
 }

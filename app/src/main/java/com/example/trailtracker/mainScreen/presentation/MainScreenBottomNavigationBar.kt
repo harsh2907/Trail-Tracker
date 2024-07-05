@@ -1,4 +1,4 @@
-package com.example.trailtracker.mainScreen
+package com.example.trailtracker.mainScreen.presentation
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,7 +25,9 @@ sealed class Destinations(
     @DrawableRes val icon: Int,
     val route: String
 ) {
-    data object Home : Destinations("Home", R.drawable.ic_home, "Home")
+    data object Home : Destinations("Home", R.drawable.ic_home, "Home"){
+        data object Run:Destinations("Run",0,"Run")
+    }
     data object Statistics : Destinations("Statistics", R.drawable.ic_stats, "Statistics")
     data object Profile : Destinations("Profile", R.drawable.ic_person, "Profile")
 }
