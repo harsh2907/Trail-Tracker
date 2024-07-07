@@ -1,10 +1,10 @@
-package com.example.trailtracker.domain.models
+package com.example.trailtracker.mainScreen.domain.models
 
 import android.graphics.Bitmap
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
-import com.example.trailtracker.data.local.BitmapConverter
+import com.example.trailtracker.mainScreen.presentation.screens.home.data.local.BitmapConverter
 
 @Entity("runningSession_table")
 @TypeConverters(BitmapConverter::class)

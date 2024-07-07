@@ -1,7 +1,7 @@
-package com.example.trailtracker.data.local
+package com.example.trailtracker.mainScreen.presentation.screens.home.data.local
 
 import androidx.room.*
-import com.example.trailtracker.domain.models.Run
+import com.example.trailtracker.mainScreen.domain.models.Run
 import kotlinx.coroutines.flow.Flow
 
 @Dao

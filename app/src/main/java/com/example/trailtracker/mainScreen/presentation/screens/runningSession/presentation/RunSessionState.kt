@@ -1,22 +1,16 @@
-package com.example.trailtracker.mainScreen.presentation.screens.runningSession
+package com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation
 
 import android.location.Location
+import com.example.trailtracker.mainScreen.services.Polylines
 import com.google.android.gms.maps.model.LatLng
 
 data class RunSessionState(
     val liveLocation: Location? = null,
-    val markers: List<Location> = emptyList(),
-    val cameraPosition: LatLng? = null,
+    val polylinePoints: Polylines = mutableListOf(),
+    val cameraPosition: LatLng = LatLng(0.0, 0.0),
     val speedInKph: Double = 0.0,
     val distanceCoveredInMeters: Double = 0.0,
     val averageSpeedInKph:Double = 0.0,
-    val sessionStatus: SessionStatus = SessionStatus.IDLE,
+    val isTracking: Boolean = false,
     val sessionDuration:Long = 0L
 )
-
-enum class SessionStatus{
-    STARTED,
-    PAUSED,
-    IDLE,
-    END;
-}

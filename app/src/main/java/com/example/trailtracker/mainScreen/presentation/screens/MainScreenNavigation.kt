@@ -1,11 +1,15 @@
 package com.example.trailtracker.mainScreen.presentation.screens
 
-import android.content.pm.PackageManager
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.rounded.Stop
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -17,26 +21,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.trailtracker.mainScreen.presentation.Destinations
 import com.example.trailtracker.mainScreen.presentation.screens.home.presentation.HomeScreen
+import com.example.trailtracker.mainScreen.presentation.screens.home.presentation.HomeViewModel
 import com.example.trailtracker.mainScreen.presentation.screens.profile.presentation.ProfileScreen
-import com.example.trailtracker.mainScreen.presentation.screens.runningSession.RunningSessionScreen
-import com.example.trailtracker.mainScreen.presentation.screens.runningSession.RunningSessionViewModel
-import com.example.trailtracker.mainScreen.presentation.screens.runningSession.SessionStatus
+import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.RunningSessionScreen
+import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.RunningSessionViewModel
 import com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation.StatisticsScreen
+import com.example.trailtracker.mainScreen.services.TrackingService
+import com.example.trailtracker.utils.Constants
 import com.example.trailtracker.utils.MapStyle
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.example.trailtracker.utils.TrackingUtils
 import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
@@ -54,9 +57,34 @@ fun MainScreenNavigation(
     ) {
 
         composable(route = Destinations.Home.route) {
+            val homeViewModel: HomeViewModel = hiltViewModel()
+
+            val sortType by homeViewModel.sortType.collectAsStateWithLifecycle()
+            val allRuns by homeViewModel.allRuns.collectAsStateWithLifecycle()
+            val isTracking by TrackingService.isTracking.collectAsStateWithLifecycle()
+
+            val context = LocalContext.current
+            val activity = context as Activity
+
+
+            LaunchedEffect(activity.intent) {
+                if (activity.intent.action == Constants.ACTION_SHOW_TRACKING_SCREEN && isTracking) {
+                    navController.navigate(Destinations.Home.Run.route) {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            }
+
+
             HomeScreen(
+                allRuns = allRuns,
+                sortType = sortType,
                 navigateToSession = {
-                    navController.navigate(Destinations.Home.Run.route)
+                    navController.navigate(Destinations.Home.Run.route) {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
             )
         }
@@ -71,84 +99,64 @@ fun MainScreenNavigation(
 
         runNavigation(
             navigateToHome = {
-
+                navController.navigateUp()
             }
         )
     }
 }
 
-@OptIn(ExperimentalPermissionsApi::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 fun NavGraphBuilder.runNavigation(
     navigateToHome: () -> Unit
 ) {
     composable(route = Destinations.Home.Run.route) {
 
-        val runningSessionViewModel: RunningSessionViewModel = hiltViewModel()
+        val runningSessionViewModel: RunningSessionViewModel = viewModel()
         val runSessionState by runningSessionViewModel.runSessionState.collectAsStateWithLifecycle()
-
         val context = LocalContext.current
 
-        val multiplePermissionState = rememberMultiplePermissionsState(
-            permissions = listOf(
-                android.Manifest.permission.ACCESS_FINE_LOCATION,
-                android.Manifest.permission.ACCESS_COARSE_LOCATION
-            )
-        )
-
-        fun hasLocationPermission(): Boolean {
-            return ActivityCompat.checkSelfPermission(
-                context,
-                android.Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                context,
-                android.Manifest.permission.ACCESS_COARSE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        }
-
-
-        LaunchedEffect(key1 = true) {
-            if (hasLocationPermission()) {
-                runningSessionViewModel.getLastLocation()
-            } else {
-                multiplePermissionState.launchMultiplePermissionRequest()
+        fun sendCommandToService(action: String) {
+            val intent = Intent(context, TrackingService::class.java).apply {
+                this.action = action
             }
+            context.startService(intent)
         }
 
-        LifecycleResumeEffect(key1 = true) {
-            runningSessionViewModel.startLocationUpdates()
-
-            onPauseOrDispose {
-                runningSessionViewModel.stopLocationUpdates()
-            }
-        }
 
         val cameraPositionState = rememberCameraPositionState {
             position = CameraPosition.fromLatLngZoom(
-                runSessionState.cameraPosition ?: LatLng(0.0, 0.0),
-                20f
+                runSessionState.cameraPosition,
+                16f
             )
         }
 
         LaunchedEffect(runSessionState.cameraPosition) {
-            runSessionState.cameraPosition?.let { loc ->
-                if (!cameraPositionState.isMoving) {
-                    cameraPositionState.position =
-                        CameraPosition.fromLatLngZoom(loc, cameraPositionState.position.zoom)
-                }
+            if (!cameraPositionState.isMoving) {
+                cameraPositionState.position =
+                    CameraPosition.fromLatLngZoom(
+                        runSessionState.cameraPosition,
+                        cameraPositionState.position.zoom
+                    )
             }
         }
 
-        val uiSettings = remember { MapUiSettings(
-            zoomControlsEnabled = false,
-            zoomGesturesEnabled = true
-        ) }
+        val uiSettings = remember {
+            MapUiSettings(
+                zoomControlsEnabled = false,
+                zoomGesturesEnabled = true
+            )
+        }
 
         val mapProperties = remember {
             MapProperties(
                 mapStyleOptions = MapStyleOptions(MapStyle.json),
-                minZoomPreference = 5f,
-                isMyLocationEnabled = true
+                minZoomPreference = 5f
             )
+        }
+
+        BackHandler {
+            sendCommandToService(Constants.STOP_SERVICE)
+            navigateToHome()
         }
 
 
@@ -157,19 +165,16 @@ fun NavGraphBuilder.runNavigation(
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = {
-                        if (runSessionState.sessionStatus != SessionStatus.STARTED) {
-                            runningSessionViewModel.startSession()
+                        if (runSessionState.isTracking) {
+                            sendCommandToService(Constants.PAUSE_SERVICE)
                         } else {
-                            runningSessionViewModel.pauseSession()
+                            sendCommandToService(Constants.START_OR_RESUME_SERVICE)
                         }
                     },
                     shape = CircleShape
                 ) {
                     Icon(
-                        imageVector = when (runSessionState.sessionStatus) {
-                            SessionStatus.STARTED -> Icons.Default.Pause
-                            else -> Icons.Default.PlayArrow
-                        },
+                        imageVector = if (runSessionState.isTracking) Icons.Rounded.Stop else Icons.Default.PlayArrow,
                         contentDescription = "run",
                         tint = Color.Black
                     )

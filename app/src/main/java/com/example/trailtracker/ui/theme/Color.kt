@@ -11,8 +11,7 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 object UiColors{
-    val Lime = Color(0xffc7ff1b)
-    val primaryColor = Color(0xffd9fe54)
+    val primaryColor = Color(0xffcdfb47)
     val secondaryColor = Color(0xffAEEA00)
     val EerieBlack = Color(0xff1b1b1b)
 }

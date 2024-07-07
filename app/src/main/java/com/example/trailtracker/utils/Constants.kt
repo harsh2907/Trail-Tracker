@@ -2,10 +2,21 @@ package com.example.trailtracker.utils
 
 import java.util.Locale
 
-object Constants {
+object Constants{
 
+    const val START_OR_RESUME_SERVICE = "START_OR_RESUME_SERVICE"
+    const val PAUSE_SERVICE = "PAUSE_SERVICE"
+    const val STOP_SERVICE = "STOP_SERVICE"
+
+    const val NOTIFICATION_CHANNEL_ID = "tracking_channel"
+    const val NOTIFICATION_CHANNEL_NAME = "Tracking"
+    const val NOTIFICATION_ID = 1
+
+    const val ACTION_SHOW_TRACKING_SCREEN = "ACTION_SHOW_TRACKING_SCREEN"
 
 }
+
+
 
 fun Long.formatTime(): String {
     val hours = this / 3600

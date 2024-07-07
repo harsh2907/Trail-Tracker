@@ -1,4 +1,4 @@
-package com.example.trailtracker.data.local
+package com.example.trailtracker.mainScreen.presentation.screens.home.data.local
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory

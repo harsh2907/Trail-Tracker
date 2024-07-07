@@ -24,6 +24,7 @@ retrofit = "2.9.0"
 roomRuntime = "2.6.1"
 ksp = "1.9.0-1.0.13"
 playServicesLocation = "21.2.0"
+lifecycleService = "2.8.3"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
@@ -63,6 +64,7 @@ logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", ver
 maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+androidx-lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", version.ref = "lifecycleService" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

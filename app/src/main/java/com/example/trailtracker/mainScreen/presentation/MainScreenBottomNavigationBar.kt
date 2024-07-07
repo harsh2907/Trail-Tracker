@@ -61,7 +61,7 @@ fun MainScreenBottomNavigationBar(
                     )
                 },
                 label = { Text(text = screen.name) },
-                alwaysShowLabel = false,
+                alwaysShowLabel = true,
                 colors = NavigationBarItemDefaults.colors(
                     selectedTextColor = UiColors.primaryColor,
                     selectedIconColor = UiColors.primaryColor,

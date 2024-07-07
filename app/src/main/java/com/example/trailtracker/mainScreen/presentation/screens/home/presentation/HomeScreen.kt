@@ -15,10 +15,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import com.example.trailtracker.R
+import com.example.trailtracker.mainScreen.domain.models.Run
 import com.example.trailtracker.ui.theme.UiColors
+import com.example.trailtracker.utils.SortType
 
 @Composable
 fun HomeScreen(
+    allRuns:List<Run>,
+    sortType: SortType,
     navigateToSession: () -> Unit
 ) {
     Scaffold(
@@ -27,7 +31,7 @@ fun HomeScreen(
             FloatingActionButton(
                 shape = CircleShape,
                 onClick = navigateToSession,
-                containerColor = UiColors.Lime
+                containerColor = UiColors.primaryColor
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.running_person),

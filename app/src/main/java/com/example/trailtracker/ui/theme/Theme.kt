@@ -18,9 +18,8 @@ import androidx.core.view.WindowCompat
 private val DarkColorScheme = darkColorScheme(
     primary = UiColors.primaryColor,
     secondary = UiColors.secondaryColor,
-    tertiary = UiColors.Lime,
     background = Color.Black,
-    primaryContainer = UiColors.Lime,
+    primaryContainer = UiColors.primaryColor,
     onPrimaryContainer = Color.Black
 
 )
@@ -28,8 +27,7 @@ private val DarkColorScheme = darkColorScheme(
 private val LightColorScheme = lightColorScheme(
     primary = UiColors.primaryColor,
     secondary = UiColors.secondaryColor,
-    tertiary = UiColors.Lime,
-    primaryContainer = UiColors.Lime,
+    primaryContainer = UiColors.primaryColor,
     onPrimaryContainer = Color.Black,
     onPrimary = Color.Black
 
@@ -74,7 +72,7 @@ fun TrailTrackerTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = PoppinsTypography,
         content = content
     )
 }

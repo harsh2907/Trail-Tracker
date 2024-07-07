@@ -1,4 +1,4 @@
-package com.example.trailtracker.mainScreen.data
+package com.example.trailtracker.mainScreen.presentation.screens.runningSession.data
 
 import android.annotation.SuppressLint
 import android.location.Location
@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/*
 class LocationRepository @Inject constructor(
     private val fusedLocationClient: FusedLocationProviderClient
 ) {
@@ -91,4 +92,5 @@ class LocationRepository @Inject constructor(
         locationCallback = null
     }
 }
+*/
 
