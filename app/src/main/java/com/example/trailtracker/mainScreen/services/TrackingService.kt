@@ -10,12 +10,16 @@ import android.content.Intent
 import android.location.Location
 import android.os.Looper
 import android.util.Log
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.lifecycleScope
 import com.example.trailtracker.MainActivity
 import com.example.trailtracker.R
 import com.example.trailtracker.utils.Constants
 import com.example.trailtracker.utils.TrackingUtils
+import com.example.trailtracker.utils.formatTime
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -29,11 +33,19 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 typealias Polyline = MutableList<LatLng>
 typealias Polylines = MutableList<Polyline>
+
+data class ColoredPolyline(
+    val points: MutableList<LatLng>,
+    val color: Int
+)
+
+typealias ColoredPolylines = MutableList<ColoredPolyline>
 
 class TrackingService : LifecycleService() {
 
@@ -41,22 +53,90 @@ class TrackingService : LifecycleService() {
     private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var timerJob: Job? = null
+    private var trackingJob: Job? = null
 
     companion object {
         const val TAG = "Tracking Service"
         val isTracking = MutableStateFlow(false)
         val lastLocation = MutableStateFlow<Location?>(null)
         val pathPoints = MutableStateFlow<Polylines>(mutableListOf())
+        val coloredPolylinePoints = MutableStateFlow<ColoredPolylines>(mutableListOf())
+        val speedInKph = MutableStateFlow<Double>(0.0)
+        val distanceCoveredInMeters = MutableStateFlow(0.0)
+        val speedArray = MutableStateFlow<List<Double>>(emptyList())
         val sessionDuration = MutableStateFlow(0L)
 
+        fun resetStates(){
+            lastLocation.update { null }
+            pathPoints.update { mutableListOf() }
+            coloredPolylinePoints.update { mutableListOf() }
+            distanceCoveredInMeters.update { 0.0 }
+        }
     }
+
 
     override fun onCreate() {
         super.onCreate()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         startLocationTracking()
+
+        trackingJob?.cancel()
+        trackingJob = lifecycleScope.launch {
+            isTracking.collectLatest {
+                while (it){
+                    delay(2000)
+                    pathPoints.value.let { points ->
+                        Log.e("Collected Points",points.toString())
+                        if (points.isNotEmpty() && points.last().size > 1) {
+                            val preLastPoint = points.last().dropLast(1).last()
+                            val lastPoint = points.last().last()
+
+                            Log.e("Pre and last", "$preLastPoint $lastPoint")
+
+
+                            val results = FloatArray(1)
+                            Location.distanceBetween(
+                                preLastPoint.latitude,
+                                preLastPoint.longitude,
+                                lastPoint.latitude,
+                                lastPoint.longitude,
+                                results
+                            )
+                            val distance = results[0]
+
+                            // Calculate speed in m/s and convert to km/h
+                            val speed = (distance / 2.0) * 3.6
+
+                            // Determine color based on speed
+                            val color = when {
+                                speed <= 8 -> Color.Red.toArgb()
+                                speed <= 14 -> Color.Yellow.toArgb()
+                                else -> Color.Green.toArgb()
+                            }
+
+                            // Create a ColoredPolyline and update the state
+                            val coloredPoint =
+                                ColoredPolyline(mutableListOf(preLastPoint, lastPoint), color)
+                            coloredPolylinePoints.update { it.apply { add(coloredPoint) } }
+
+                            // Update flows
+                            speedInKph.update { speed }
+                            distanceCoveredInMeters.update { it + distance }
+                            speedArray.update { it + speed }
+                        }
+                    }
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            sessionDuration.collectLatest { time ->
+                updateNotification(time.formatTime())
+            }
+        }
     }
 
+    @SuppressLint("MissingSuperCall")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         intent?.let {
@@ -85,6 +165,7 @@ class TrackingService : LifecycleService() {
                     isRunningFirstTime = true
 
                     fusedLocationClient.removeLocationUpdates(locationCallback)
+                    trackingJob?.cancel()
                     stopSelf()
                 }
             }
@@ -151,7 +232,6 @@ class TrackingService : LifecycleService() {
     private fun addEmptyPolyline() {
         pathPoints.update {
             it.add(mutableListOf())
-
             it
         }
     }
@@ -159,9 +239,9 @@ class TrackingService : LifecycleService() {
     //Add Position to the last of the list
     private fun addPointToPath(location: Location) {
         val pos = LatLng(location.latitude, location.longitude)
+        Log.e("Path", pos.toString())
         pathPoints.update { points ->
             points.last().add(pos)
-
             points
         }
     }
@@ -180,7 +260,7 @@ class TrackingService : LifecycleService() {
                 .setAutoCancel(false)
                 .setOngoing(true)
                 .setSmallIcon(R.drawable.running_person)
-                .setContentTitle("Trail Tracker")
+                .setContentTitle("Running Session")
                 .setContentText("00:00:00")
                 .setContentIntent(getMainActivityPendingIntent())
                 .build()
@@ -218,7 +298,7 @@ class TrackingService : LifecycleService() {
                 .setAutoCancel(false)
                 .setOngoing(true)
                 .setSmallIcon(R.drawable.running_person)
-                .setContentTitle("Trail Tracker")
+                .setContentTitle("Running Session")
                 .setContentText(time)
                 .setContentIntent(getMainActivityPendingIntent())
                 .build()
@@ -230,6 +310,7 @@ class TrackingService : LifecycleService() {
         super.onDestroy()
         fusedLocationClient.removeLocationUpdates(locationCallback)
         timerJob?.cancel()
+        trackingJob?.cancel()
     }
 
 }

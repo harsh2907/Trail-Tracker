@@ -61,26 +61,17 @@ fun MainScreenNavigation(
 
             val sortType by homeViewModel.sortType.collectAsStateWithLifecycle()
             val allRuns by homeViewModel.allRuns.collectAsStateWithLifecycle()
-            val isTracking by TrackingService.isTracking.collectAsStateWithLifecycle()
 
             val context = LocalContext.current
             val activity = context as Activity
 
-
-            LaunchedEffect(activity.intent) {
-                if (activity.intent.action == Constants.ACTION_SHOW_TRACKING_SCREEN && isTracking) {
-                    navController.navigate(Destinations.Home.Run.route) {
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                }
-            }
 
 
             HomeScreen(
                 allRuns = allRuns,
                 sortType = sortType,
                 navigateToSession = {
+                    TrackingService.resetStates()
                     navController.navigate(Destinations.Home.Run.route) {
                         launchSingleTop = true
                         restoreState = true

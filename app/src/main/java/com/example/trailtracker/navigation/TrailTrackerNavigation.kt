@@ -20,7 +20,8 @@ import com.example.trailtracker.onboardingDetails.presentation.OnboardingDetails
 @Composable
 fun TrailTrackerNavigation(
     navController: NavHostController,
-    startDestination:String
+    startDestination: String,
+    shouldNavigateToSession: Boolean
 ) {
 
     NavHost(navController = navController, startDestination = startDestination) {
@@ -61,7 +62,9 @@ fun TrailTrackerNavigation(
         }
 
         composable(route = Screens.MainScreen.route) {
-            MainScreen()
+            MainScreen(
+                shouldNavigateToSession = shouldNavigateToSession
+            )
         }
     }
 }

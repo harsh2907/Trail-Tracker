@@ -92,25 +92,11 @@ fun RunningSessionScreen(
 
             key(state){
 
-                if (state.polylinePoints.isNotEmpty() && state.polylinePoints.last().size > 1) {
-                    val preLastPoint = state.polylinePoints.last()[state.polylinePoints.last().size - 2]
-                    val lastPoint = state.polylinePoints.last().last()
-
-                    Log.e("Points at Last", listOf(preLastPoint,lastPoint).toString())
-
-
-                    Polyline(
-                        points = listOf(preLastPoint, lastPoint),
-                        color = polylineColor,
-                        endCap = RoundCap()
-                    )
-                }
-
                 state.polylinePoints.forEach { polyline ->
                     Polyline(
-                        points = polyline,
+                        points = polyline.points,
                         endCap = RoundCap(),
-                        color = UiColors.primaryColor
+                        color = Color(polyline.color)
                     )
                 }
             }

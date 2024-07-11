@@ -3,8 +3,6 @@ package com.example.trailtracker.mainScreen.presentation
 import android.Manifest
 import android.app.Activity
 import android.os.Build
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -17,9 +15,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.trailtracker.mainScreen.presentation.screens.MainScreenNavigation
+import com.example.trailtracker.mainScreen.services.TrackingService
 import com.example.trailtracker.ui.theme.UiColors
 import com.example.trailtracker.utils.TrackingUtils
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -27,7 +27,7 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(shouldNavigateToSession: Boolean) {
     val bottomNavController = rememberNavController()
     val backstack by bottomNavController.currentBackStackEntryAsState()
 
@@ -70,6 +70,18 @@ fun MainScreen() {
     ) { paddingValues ->
         val window = (LocalView.current.context as Activity).window
         window.navigationBarColor = UiColors.EerieBlack.toArgb()
+        val isTracking by TrackingService.isTracking.collectAsStateWithLifecycle()
+
+
+
+        LaunchedEffect(shouldNavigateToSession ) {
+            if(shouldNavigateToSession && isTracking){
+                bottomNavController.navigate(Destinations.Home.Run.route){
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }
+        }
 
         MainScreenNavigation(
             modifier = Modifier
