@@ -1,8 +1,5 @@
 package com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation
 
-import android.location.Location
-import com.example.trailtracker.mainScreen.services.ColoredPolyline
-import com.example.trailtracker.mainScreen.services.Polylines
 import com.google.android.gms.maps.model.LatLng
 
 data class RunSessionState(

@@ -3,15 +3,22 @@ package com.example.trailtracker.mainScreen.presentation.screens.runningSession.
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.trailtracker.mainScreen.domain.models.Run
+import com.example.trailtracker.mainScreen.domain.repositories.RunRepository
 import com.example.trailtracker.mainScreen.services.TrackingService
 import com.google.android.gms.maps.model.LatLng
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-
-class RunningSessionViewModel : ViewModel() {
+@HiltViewModel
+class RunningSessionViewModel @Inject constructor(
+    private val runRepository: RunRepository
+) : ViewModel() {
 
     val runSessionState = combine(
         TrackingService.coloredPolylinePoints,
@@ -38,6 +45,12 @@ class RunningSessionViewModel : ViewModel() {
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), RunSessionState())
 
+
+    fun saveSession(run:Run){
+        viewModelScope.launch {
+            runRepository.upsertRun(run)
+        }
+    }
 
     private inline fun <T1, T2, T3, T4, T5, T6, T7, R> combine(
         flow: Flow<T1>,

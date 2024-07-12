@@ -10,13 +10,10 @@ class RunRepositoryImpl @Inject constructor(
     private val runDao: RunDao
 ) : RunRepository {
 
-    override suspend fun insertRun(run: Run) {
-        runDao.insertRun(run)
+    override suspend fun upsertRun(run: Run) {
+        runDao.upsertRun(run)
     }
 
-    override suspend fun updateRun(run: Run) {
-        runDao.updateRun(run)
-    }
 
     override suspend fun deleteRun(run: Run) {
         runDao.deleteRun(run)

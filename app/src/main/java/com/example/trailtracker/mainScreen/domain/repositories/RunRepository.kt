@@ -4,8 +4,7 @@ import com.example.trailtracker.mainScreen.domain.models.Run
 import kotlinx.coroutines.flow.Flow
 
 interface RunRepository {
-    suspend fun insertRun(run: Run)
-    suspend fun updateRun(run: Run)
+    suspend fun upsertRun(run: Run)
     suspend fun deleteRun(run: Run)
     suspend fun deleteAllRuns()
     suspend fun getRunById(id: Long): Run?

@@ -15,11 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.trailtracker.mainScreen.presentation.screens.MainScreenNavigation
-import com.example.trailtracker.mainScreen.services.TrackingService
 import com.example.trailtracker.ui.theme.UiColors
 import com.example.trailtracker.utils.TrackingUtils
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -70,12 +68,9 @@ fun MainScreen(shouldNavigateToSession: Boolean) {
     ) { paddingValues ->
         val window = (LocalView.current.context as Activity).window
         window.navigationBarColor = UiColors.EerieBlack.toArgb()
-        val isTracking by TrackingService.isTracking.collectAsStateWithLifecycle()
-
-
 
         LaunchedEffect(shouldNavigateToSession ) {
-            if(shouldNavigateToSession && isTracking){
+            if(shouldNavigateToSession){
                 bottomNavController.navigate(Destinations.Home.Run.route){
                     launchSingleTop = true
                     restoreState = true

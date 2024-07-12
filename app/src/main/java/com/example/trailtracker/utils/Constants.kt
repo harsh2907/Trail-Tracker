@@ -1,6 +1,10 @@
 package com.example.trailtracker.utils
 
 import java.util.Locale
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+
 
 object Constants{
 
@@ -13,6 +17,20 @@ object Constants{
     const val NOTIFICATION_ID = 1
 
     const val ACTION_SHOW_TRACKING_SCREEN = "ACTION_SHOW_TRACKING_SCREEN"
+
+
+    fun convertEpochToFormattedDate(epochMillis: Long): String {
+        // Define the date formatter with the desired pattern
+        val formatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy - hh:mm a")
+            .withZone(ZoneId.systemDefault())
+
+        // Convert epoch milliseconds to an Instant
+        val instant = Instant.ofEpochMilli(epochMillis)
+
+        // Format the Instant to a string
+        return formatter.format(instant)
+    }
+
 
 }
 

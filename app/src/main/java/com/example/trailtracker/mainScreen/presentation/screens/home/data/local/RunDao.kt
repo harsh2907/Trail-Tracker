@@ -7,11 +7,8 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface RunDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertRun(run: Run)
-
-    @Update
-    suspend fun updateRun(run: Run)
+    @Upsert
+    suspend fun upsertRun(run: Run)
 
     @Delete
     suspend fun deleteRun(run: Run)

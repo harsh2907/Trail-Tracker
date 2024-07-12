@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleIntent(intent: Intent) {
-        if (intent.action == Constants.ACTION_SHOW_TRACKING_SCREEN && TrackingService.isTracking.value) {
+        if (intent.action == Constants.ACTION_SHOW_TRACKING_SCREEN && TrackingService.isServiceActive) {
             navigateToSession.update { true }
         }else{
             navigateToSession.update { false }

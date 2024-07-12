@@ -26,6 +26,10 @@ class HomeViewModel @Inject constructor(
     private val _allRuns = MutableStateFlow<List<Run>>(emptyList())
     val allRuns = _allRuns.asStateFlow()
 
+    init {
+        getAllRuns()
+    }
+
 
     fun getAllRuns(){
         viewModelScope.launch {
