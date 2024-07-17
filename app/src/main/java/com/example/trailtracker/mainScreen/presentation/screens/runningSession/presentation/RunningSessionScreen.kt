@@ -77,7 +77,7 @@ fun RunningSessionScreen(
 
         var triggerCapture by remember { mutableStateOf(false) }
         var isMapLoaded by remember { mutableStateOf(false) }
-        val currentLocationMarkerState = remember { MarkerState(position = LatLng(0.0,0.0)) }
+        val currentLocationMarkerState = remember { MarkerState(position = state.cameraPosition) }
         var createSnapshotJob: Job? = remember { null }
         val coroutineScope = rememberCoroutineScope()
 

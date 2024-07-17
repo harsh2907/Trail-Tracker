@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.location.Location
 import android.os.Looper
+import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.app.NotificationCompat
@@ -48,7 +49,6 @@ class TrackingService : LifecycleService() {
     private var isRunningFirstTime = true
 
 
-
     private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var timerJob: Job? = null
     private var trackingJob: Job? = null
@@ -83,6 +83,7 @@ class TrackingService : LifecycleService() {
             isServiceActive = false
         }
     }
+
 
 
     override fun onCreate() {

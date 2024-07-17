@@ -1,8 +1,10 @@
 package com.example.trailtracker
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,10 +20,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.example.trailtracker.mainScreen.services.TrackingService
+import com.example.trailtracker.mainScreen.services.TrackingService.Companion.lastLocation
 import com.example.trailtracker.navigation.TrailTrackerNavigation
 import com.example.trailtracker.onboardingDetails.presentation.OnBoardingViewModel
 import com.example.trailtracker.ui.theme.TrailTrackerTheme
 import com.example.trailtracker.utils.Constants
+import com.example.trailtracker.utils.TrackingUtils
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -31,6 +37,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestInitialLocation()
+
         setContent {
             //TrailTracker
             // - For those who love running off the beaten path and tracking their adventures.
@@ -48,23 +56,36 @@ class MainActivity : ComponentActivity() {
                     val window = (LocalView.current.context as Activity).window
                     LaunchedEffect(Unit) {
                         window.statusBarColor = Color.Black.toArgb()
-                     //   WindowCompat.setDecorFitsSystemWindows(window, false)
                     }
 
                     LaunchedEffect(intent) {
                         handleIntent(intent)
                     }
 
-                    val shouldNavigate by navigateToSession.collectAsStateWithLifecycle()
 
 
                     TrailTrackerNavigation(
                         navController = navController,
-                        startDestination =startDestination,
-                        shouldNavigateToSession = shouldNavigate
+                        startDestination =startDestination
                     )
                 }
             }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun requestInitialLocation() {
+        if (TrackingUtils.hasAllPermissions(this)) {
+            val client = LocationServices.getFusedLocationProviderClient(this)
+            client.lastLocation
+                .addOnSuccessListener { location ->
+                    Log.e(
+                        "Initial Location",
+                        location.let { LatLng(it.latitude, it.longitude).toString() })
+                    TrackingService.lastLocation.update { location }
+                }.addOnFailureListener {
+                    Log.e("Initial Location", it.message, it)
+                }
         }
     }
 
@@ -82,7 +103,7 @@ class MainActivity : ComponentActivity() {
     }
 
     companion object{
-        private val navigateToSession = MutableStateFlow(false)
+        val navigateToSession = MutableStateFlow(false)
     }
 }
 
