@@ -39,6 +39,11 @@ fun TrailTrackerNavigation(
                     navController.navigate(Screens.OnBoardingDetailsScreen.route)
                 }
             )
+
+        }
+
+        composable(route = Screens.Auth.route){
+
         }
 
         composable(route = Screens.OnBoardingDetailsScreen.route) {

@@ -5,5 +5,6 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid) apply false
     alias(libs.plugins.ksp)  apply false
     alias(libs.plugins.hiltAndroid) apply false
+    alias(libs.plugins.googleGmsGoogleServices) apply false
 }
 

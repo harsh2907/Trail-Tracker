@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1096595722766",
+    "project_id": "trailtracker-e655d",
+    "storage_bucket": "trailtracker-e655d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1096595722766:android:6cfc1befef3a7a720ea25f",
+        "android_client_info": {
+          "package_name": "com.example.trailtracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzh6NbBn80sjOAgROgbWS_eHNeUYZQKk8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

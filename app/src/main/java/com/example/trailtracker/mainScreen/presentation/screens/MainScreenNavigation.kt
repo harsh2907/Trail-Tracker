@@ -130,8 +130,12 @@ fun NavGraphBuilder.runNavigation(
         }
 
         BackHandler {
-            sendCommandToService(Constants.PAUSE_SERVICE)
-            isDialogVisible = true
+            if(!state.isTracking && state.polylinePoints.isEmpty()){
+                navigateToHome()
+            }else{
+                sendCommandToService(Constants.PAUSE_SERVICE)
+                isDialogVisible = true
+            }
         }
 
         val cameraPositionState = rememberCameraPositionState {
