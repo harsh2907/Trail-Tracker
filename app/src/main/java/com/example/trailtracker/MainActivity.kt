@@ -20,9 +20,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.example.trailtracker.mainScreen.services.TrackingService
-import com.example.trailtracker.mainScreen.services.TrackingService.Companion.lastLocation
 import com.example.trailtracker.navigation.TrailTrackerNavigation
-import com.example.trailtracker.onboardingDetails.presentation.OnBoardingViewModel
+import com.example.trailtracker.onboarding.AuthenticationViewModel
 import com.example.trailtracker.ui.theme.TrailTrackerTheme
 import com.example.trailtracker.utils.Constants
 import com.example.trailtracker.utils.TrackingUtils
@@ -50,8 +49,8 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val navController = rememberNavController()
 
-                    val onBoardingViewModel: OnBoardingViewModel = hiltViewModel()
-                    val startDestination by onBoardingViewModel.startDestination.collectAsStateWithLifecycle()
+                    val authenticationViewModel: AuthenticationViewModel = hiltViewModel()
+                    val startDestination by authenticationViewModel.startDestination.collectAsStateWithLifecycle()
 
                     val window = (LocalView.current.context as Activity).window
                     LaunchedEffect(Unit) {
@@ -79,9 +78,6 @@ class MainActivity : ComponentActivity() {
             val client = LocationServices.getFusedLocationProviderClient(this)
             client.lastLocation
                 .addOnSuccessListener { location ->
-                    Log.e(
-                        "Initial Location",
-                        location.let { LatLng(it.latitude, it.longitude).toString() })
                     TrackingService.lastLocation.update { location }
                 }.addOnFailureListener {
                     Log.e("Initial Location", it.message, it)

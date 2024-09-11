@@ -5,6 +5,8 @@ import androidx.room.Room
 import com.example.trailtracker.mainScreen.presentation.screens.home.data.local.RunDao
 import com.example.trailtracker.mainScreen.presentation.screens.home.data.local.RunDatabase
 import com.example.trailtracker.datastore.DataStoreUtils
+import com.example.trailtracker.mainScreen.data.FirebaseRunRepository
+import com.example.trailtracker.mainScreen.domain.repositories.FirebaseUserRepository
 import com.example.trailtracker.mainScreen.domain.repositories.RunRepository
 import com.example.trailtracker.mainScreen.domain.usecases.SortRunsUseCase
 import com.example.trailtracker.mainScreen.presentation.screens.home.data.repository.RunRepositoryImpl
@@ -45,12 +47,20 @@ object AppModule {
         runDao: RunDao
     ):RunRepository = RunRepositoryImpl(runDao)
 
+    @Provides
+    @Singleton
+    fun provideFirebaseUserRepository() = FirebaseUserRepository()
+
+    @Provides
+    @Singleton
+    fun provideFirebaseRunRepository() = FirebaseRunRepository()
+
 
     @Provides
     @Singleton
     fun provideSortRunsUseCase(
-        runRepository: RunRepository
-    ): SortRunsUseCase = SortRunsUseCase(runRepository)
+        firebaseRunRepository: FirebaseRunRepository
+    ): SortRunsUseCase = SortRunsUseCase(firebaseRunRepository )
 
 
 }

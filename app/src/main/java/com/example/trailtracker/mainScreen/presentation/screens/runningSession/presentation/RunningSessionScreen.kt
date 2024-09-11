@@ -64,13 +64,13 @@ import kotlin.math.roundToInt
 @Composable
 fun RunningSessionScreen(
     modifier: Modifier = Modifier,
-    isRunFinished:Boolean,
+    isRunFinished: Boolean,
     state: RunSessionState,
-    isDialogVisible:Boolean,
+    isDialogVisible: Boolean,
     cameraPositionState: CameraPositionState,
     uiSettings: MapUiSettings,
     mapProperties: MapProperties,
-    onSnapshot:(Bitmap)->Unit
+    onSnapshot: (Bitmap) -> Unit
 ) {
 
     Box(modifier = modifier) {
@@ -82,13 +82,16 @@ fun RunningSessionScreen(
         val coroutineScope = rememberCoroutineScope()
 
 
-        LaunchedEffect(state.cameraPosition, isRunFinished,isDialogVisible) {
+        LaunchedEffect(state.cameraPosition, isRunFinished, isDialogVisible) {
             if (!isRunFinished && !isDialogVisible) {
                 currentLocationMarkerState.position = state.cameraPosition
             }
         }
 
-
+        /**
+         Changing the modifier after run is finished so that it can adjust to the size of screenshot we want
+         and also alpha 0 so that we can see the change ourselves
+         **/
         GoogleMap(
             modifier = if (isRunFinished) {
                 Modifier
@@ -114,11 +117,11 @@ fun RunningSessionScreen(
 
             key(state) {
 
-                state.polylinePoints.forEach { polyline ->
+                state.polylinePoints.forEach { coloredPolyline ->
                     Polyline(
-                        points = polyline.points,
+                        points = coloredPolyline.points,
                         endCap = RoundCap(),
-                        color = Color(polyline.color)
+                        color = Color(coloredPolyline.color)
                     )
                 }
             }

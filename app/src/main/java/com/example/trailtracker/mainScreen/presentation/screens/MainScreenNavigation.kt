@@ -1,10 +1,12 @@
 package com.example.trailtracker.mainScreen.presentation.screens
 
-import android.annotation.SuppressLint
 import android.content.Intent
-import android.util.Log
+import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.CircleShape
@@ -20,7 +22,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,12 +36,14 @@ import com.example.trailtracker.mainScreen.domain.models.Run
 import com.example.trailtracker.mainScreen.presentation.Destinations
 import com.example.trailtracker.mainScreen.presentation.screens.home.presentation.HomeScreen
 import com.example.trailtracker.mainScreen.presentation.screens.home.presentation.HomeViewModel
+import com.example.trailtracker.mainScreen.presentation.screens.profile.ProfileViewModel
 import com.example.trailtracker.mainScreen.presentation.screens.profile.presentation.ProfileScreen
 import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.EndSessionDialog
 import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.RunningSessionScreen
 import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.RunningSessionViewModel
 import com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation.StatisticsScreen
 import com.example.trailtracker.mainScreen.services.TrackingService
+import com.example.trailtracker.navigation.Screens
 import com.example.trailtracker.utils.Constants
 import com.example.trailtracker.utils.MapStyle
 import com.google.android.gms.maps.model.CameraPosition
@@ -83,7 +86,53 @@ fun MainScreenNavigation(
         }
 
         composable(route = Destinations.Profile.route) {
-            ProfileScreen()
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            val currentUser by profileViewModel.currentUser.collectAsStateWithLifecycle()
+            val totalDistance by profileViewModel.getTotalDistance()
+                .collectAsStateWithLifecycle(initialValue = 0.0)
+            val totalDuration by profileViewModel.getTotalTimeSpend()
+                .collectAsStateWithLifecycle(initialValue = 0L)
+            val averageSpeed by profileViewModel.getAverageSpeed()
+                .collectAsStateWithLifecycle(initialValue = 0.0)
+            val totalCalories by profileViewModel.getTotalCalories()
+                .collectAsStateWithLifecycle(initialValue = 0)
+
+            LaunchedEffect(key1 = currentUser) {
+                if (currentUser == null) {
+                    navController.popBackStack()
+                    navController.navigate(Screens.OnBoardingScreen.route)
+                }
+            }
+
+            var selectedImageUri: Uri? by remember { mutableStateOf(null) }
+            val context = LocalContext.current
+
+            val imagePicker =
+                rememberLauncherForActivityResult(contract = ActivityResultContracts.PickVisualMedia(),
+                    onResult = { uri ->
+                        if (uri != null) {
+                            selectedImageUri = uri
+                        }
+                    })
+
+
+            LaunchedEffect(key1 = selectedImageUri) {
+                selectedImageUri?.let { uri: Uri ->
+                    profileViewModel.updateUserProfileImage(imageUri = uri)
+                }
+            }
+
+            ProfileScreen(
+                currentUser = currentUser!!,
+                totalDistance = totalDistance,
+                totalDuration = totalDuration,
+                averageSpeed = averageSpeed,
+                totalCalories = totalCalories,
+                selectedImageUri = selectedImageUri,
+                onProfileImageClicked = {
+                    imagePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                }
+            )
         }
 
         runNavigation(
@@ -94,7 +143,7 @@ fun MainScreenNavigation(
     }
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+
 fun NavGraphBuilder.runNavigation(
     navigateToHome: () -> Unit
 ) {
@@ -106,7 +155,6 @@ fun NavGraphBuilder.runNavigation(
 
         var isDialogVisible by remember { mutableStateOf(false) }
         var isRunFinished by remember { mutableStateOf(false) }
-
 
 
         fun sendCommandToService(action: String) {
@@ -130,9 +178,9 @@ fun NavGraphBuilder.runNavigation(
         }
 
         BackHandler {
-            if(!state.isTracking && state.polylinePoints.isEmpty()){
+            if (!state.isTracking && state.polylinePoints.isEmpty()) {
                 navigateToHome()
-            }else{
+            } else {
                 sendCommandToService(Constants.PAUSE_SERVICE)
                 isDialogVisible = true
             }
@@ -169,6 +217,12 @@ fun NavGraphBuilder.runNavigation(
             )
         }
 
+        var isLoading by remember {
+            mutableStateOf(false)
+        }
+
+
+
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             floatingActionButton = {
@@ -190,7 +244,8 @@ fun NavGraphBuilder.runNavigation(
                 }
             },
             floatingActionButtonPosition = FabPosition.Center
-        ) {
+        ) { padding ->
+            padding.calculateTopPadding()
             RunningSessionScreen(
                 isRunFinished = isRunFinished,
                 state = state,
@@ -198,20 +253,28 @@ fun NavGraphBuilder.runNavigation(
                 uiSettings = uiSettings,
                 mapProperties = mapProperties,
                 isDialogVisible = isDialogVisible,
-                onSnapshot = {mapBitmap->
+                onSnapshot = { mapBitmap ->
                     val run = Run(
-                        image = mapBitmap,
                         sessionDuration = state.sessionDuration,
                         averageSpeedInKPH = state.averageSpeedInKph,
                         distanceCovered = state.distanceCoveredInMeters
                     )
-                    Log.e("run",run.toString())
 
-                    runningSessionViewModel.saveSession(run)
-                    Toast.makeText(context, "Session saved successfully", Toast.LENGTH_SHORT).show()
-                    isDialogVisible = false
-                    sendCommandToService(Constants.STOP_SERVICE)
-                    navigateToHome()
+                    runningSessionViewModel.saveSessionToFirebase(run, mapBitmap,
+                        onSuccess = {
+                            Toast.makeText(context, "Session saved successfully", Toast.LENGTH_SHORT).show()
+                            isDialogVisible = false
+                            sendCommandToService(Constants.STOP_SERVICE)
+                            navigateToHome()
+                        },
+                        onError = { error ->
+                            Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                            isDialogVisible = false
+                            sendCommandToService(Constants.STOP_SERVICE)
+                            navigateToHome()
+                        }
+                    )
+
                 }
             )
         }

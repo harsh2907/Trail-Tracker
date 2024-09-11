@@ -1,20 +1,17 @@
 package com.example.trailtracker.mainScreen.domain.models
 
-import android.graphics.Bitmap
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import androidx.room.TypeConverters
-import com.example.trailtracker.mainScreen.presentation.screens.home.data.local.BitmapConverter
+import java.util.UUID
 
 @Entity("runningSession_table")
-@TypeConverters(BitmapConverter::class)
 data class Run(
-    @PrimaryKey(autoGenerate = true)
-    val id:Long? = null,
-    val image:Bitmap? = null,
-    val createdAt:Long = System.currentTimeMillis(),
-    val sessionDuration:Long = 0L,
-    val averageSpeedInKPH:Double = 0.0,
-    val distanceCovered:Double = 0.0,
-    val caloriesBurned:Int = 0
+    @PrimaryKey
+    val id: String = UUID.randomUUID().toString(),
+    val imageUrl: String? = null,
+    val createdAt: Long = System.currentTimeMillis(),
+    val sessionDuration: Long = 0L,
+    val averageSpeedInKPH: Double = 0.0,
+    val distanceCovered: Double = 0.0,
+    val caloriesBurned: Int = 0
 )

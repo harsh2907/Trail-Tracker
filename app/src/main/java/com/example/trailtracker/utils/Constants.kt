@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter
 
 object Constants{
 
+    val CLIENT_ID: String = ""
     const val START_OR_RESUME_SERVICE = "START_OR_RESUME_SERVICE"
     const val PAUSE_SERVICE = "PAUSE_SERVICE"
     const val STOP_SERVICE = "STOP_SERVICE"
@@ -31,6 +32,12 @@ object Constants{
         return formatter.format(instant)
     }
 
+
+    object Firebase {
+        object User {
+            const val USER_REF = "users"
+        }
+    }
 
 }
 

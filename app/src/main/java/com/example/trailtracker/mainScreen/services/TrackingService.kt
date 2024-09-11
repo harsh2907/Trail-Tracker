@@ -49,7 +49,7 @@ class TrackingService : LifecycleService() {
     private var isRunningFirstTime = true
 
 
-    private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var timerJob: Job? = null
     private var trackingJob: Job? = null
 
@@ -100,8 +100,8 @@ class TrackingService : LifecycleService() {
 
         trackingJob?.cancel()
         trackingJob = lifecycleScope.launch {
-            isTracking.collectLatest {
-                while (it) {
+            isTracking.collectLatest {tracking->
+                while (tracking) {
                     delay(2000)
                     pathPoints.value.let { points ->
 
@@ -146,7 +146,6 @@ class TrackingService : LifecycleService() {
 
     }
 
-    @SuppressLint("MissingSuperCall")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         intent?.let {
@@ -223,6 +222,7 @@ class TrackingService : LifecycleService() {
 
             result.lastLocation?.let { lastLoc ->
                 lastLocation.update { lastLoc }
+                Log.e("TrackingService",lastLoc.toString())
             }
 
             if (isTracking.value) {
@@ -248,6 +248,8 @@ class TrackingService : LifecycleService() {
                 locationCallback,
                 Looper.getMainLooper()
             )
+        }else{
+            Log.e("TrackingService","Permission not granted")
         }
     }
 

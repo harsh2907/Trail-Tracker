@@ -1,27 +1,26 @@
 package com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation
 
 
-import android.annotation.SuppressLint
-import android.util.Log
+import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.trailtracker.mainScreen.data.FirebaseRunRepository
 import com.example.trailtracker.mainScreen.domain.models.Run
 import com.example.trailtracker.mainScreen.domain.repositories.RunRepository
 import com.example.trailtracker.mainScreen.services.TrackingService
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class RunningSessionViewModel @Inject constructor(
-    private val runRepository: RunRepository
+    private val runRepository: RunRepository,
+    private val firebaseRunRepository: FirebaseRunRepository
 ) : ViewModel() {
 
 
@@ -35,7 +34,8 @@ class RunningSessionViewModel @Inject constructor(
         TrackingService.sessionDuration
     ) { polylinePoints, currentLocation, speedInMpsFlow, distanceCoveredInMetersFlow, speedArray, sessionStatus, sessionDuration ->
 
-        val cameraPosition = currentLocation?.let { loc -> LatLng(loc.latitude, loc.longitude) } ?: LatLng(0.0,0.0)
+        val cameraPosition =
+            currentLocation?.let { loc -> LatLng(loc.latitude, loc.longitude) } ?: LatLng(0.0, 0.0)
 
         RunSessionState(
             polylinePoints = polylinePoints,
@@ -43,15 +43,30 @@ class RunningSessionViewModel @Inject constructor(
             cameraPosition = cameraPosition,
             distanceCoveredInMeters = distanceCoveredInMetersFlow,
             averageSpeedInKph = if (sessionDuration == 0L) 0.0 else {
-                (distanceCoveredInMetersFlow / sessionDuration)*3.6
+                (distanceCoveredInMetersFlow / sessionDuration) * 3.6
             },
             isTracking = sessionStatus,
             sessionDuration = sessionDuration
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), RunSessionState())
 
+    fun saveSessionToFirebase(
+        run: Run,
+        image: Bitmap,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            val res = firebaseRunRepository.saveRunSession(run, image)
+            if(res.isSuccess){
+                onSuccess()
+            }else if(res.isFailure){
+                onError(res.exceptionOrNull()?.message?:"Oops,an unknown error occurred")
+            }
+        }
+    }
 
-    fun saveSession(run:Run){
+    fun saveSession(run: Run, image: Bitmap) {
         viewModelScope.launch {
             runRepository.upsertRun(run)
         }

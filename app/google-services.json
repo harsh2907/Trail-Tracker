@@ -12,7 +12,28 @@
           "package_name": "com.example.trailtracker"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1096595722766-9002gcf74em9jb2nsdlk6k9ej6ns4djt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.trailtracker",
+            "certificate_hash": "a2ebc408325bb0cad7ae73c62b6a2a919aa01615"
+          }
+        },
+        {
+          "client_id": "1096595722766-ug0ffokrl5ccoorep80huna0en2t5bob.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.trailtracker",
+            "certificate_hash": "d38a76432de2a59baca5636297ee43dcc869c3d8"
+          }
+        },
+        {
+          "client_id": "1096595722766-o5gu8okglb12j09h2digu9jq2otikm37.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDzh6NbBn80sjOAgROgbWS_eHNeUYZQKk8"
@@ -20,7 +41,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1096595722766-o5gu8okglb12j09h2digu9jq2otikm37.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

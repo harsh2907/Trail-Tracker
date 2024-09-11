@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.trailtracker.R
 import com.example.trailtracker.mainScreen.domain.models.Run
 import com.example.trailtracker.ui.theme.UiColors
@@ -113,9 +114,9 @@ fun HomeScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
 
-                        if (run.image != null) {
-                            Image(
-                                bitmap = run.image.asImageBitmap(),
+                        if (run.imageUrl != null) {
+                            AsyncImage(
+                                model = run.imageUrl,
                                 contentDescription = "map",
                                 modifier = Modifier
                                     .fillMaxWidth()
