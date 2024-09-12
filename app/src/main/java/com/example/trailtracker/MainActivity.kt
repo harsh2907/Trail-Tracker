@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
 import com.example.trailtracker.mainScreen.services.TrackingService
 import com.example.trailtracker.navigation.TrailTrackerNavigation
@@ -30,13 +31,15 @@ import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestInitialLocation()
+
 
         setContent {
             //TrailTracker
@@ -65,25 +68,14 @@ class MainActivity : ComponentActivity() {
 
                     TrailTrackerNavigation(
                         navController = navController,
-                        startDestination =startDestination
+                        startDestination = startDestination
                     )
                 }
             }
         }
     }
 
-    @SuppressLint("MissingPermission")
-    fun requestInitialLocation() {
-        if (TrackingUtils.hasAllPermissions(this)) {
-            val client = LocationServices.getFusedLocationProviderClient(this)
-            client.lastLocation
-                .addOnSuccessListener { location ->
-                    TrackingService.lastLocation.update { location }
-                }.addOnFailureListener {
-                    Log.e("Initial Location", it.message, it)
-                }
-        }
-    }
+
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -93,13 +85,18 @@ class MainActivity : ComponentActivity() {
     private fun handleIntent(intent: Intent) {
         if (intent.action == Constants.ACTION_SHOW_TRACKING_SCREEN && TrackingService.isServiceActive) {
             navigateToSession.update { true }
-        }else{
+        } else {
             navigateToSession.update { false }
         }
     }
 
-    companion object{
+    companion object {
         val navigateToSession = MutableStateFlow(false)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        TrackingUtils.sendCommandToService(this,Constants.STOP_SERVICE)
     }
 }
 

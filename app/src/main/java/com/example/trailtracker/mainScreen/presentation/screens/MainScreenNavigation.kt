@@ -1,18 +1,31 @@
 package com.example.trailtracker.mainScreen.presentation.screens
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.rounded.Stop
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -23,15 +36,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.trailtracker.R
 import com.example.trailtracker.mainScreen.domain.models.Run
 import com.example.trailtracker.mainScreen.presentation.Destinations
 import com.example.trailtracker.mainScreen.presentation.screens.home.presentation.HomeScreen
@@ -44,8 +62,10 @@ import com.example.trailtracker.mainScreen.presentation.screens.runningSession.p
 import com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation.StatisticsScreen
 import com.example.trailtracker.mainScreen.services.TrackingService
 import com.example.trailtracker.navigation.Screens
+import com.example.trailtracker.ui.theme.UiColors
 import com.example.trailtracker.utils.Constants
 import com.example.trailtracker.utils.MapStyle
+import com.example.trailtracker.utils.TrackingUtils
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.MapProperties
@@ -105,7 +125,7 @@ fun MainScreenNavigation(
             }
 
             var selectedImageUri: Uri? by remember { mutableStateOf(null) }
-            val context = LocalContext.current
+
 
             val imagePicker =
                 rememberLauncherForActivityResult(contract = ActivityResultContracts.PickVisualMedia(),
@@ -155,21 +175,23 @@ fun NavGraphBuilder.runNavigation(
 
         var isDialogVisible by remember { mutableStateOf(false) }
         var isRunFinished by remember { mutableStateOf(false) }
+        var isLoading by remember { mutableStateOf(false) }
 
 
-        fun sendCommandToService(action: String) {
-            val intent = Intent(context, TrackingService::class.java).apply {
-                this.action = action
-            }
-            context.startService(intent)
+        val activity = context as Activity
+
+        LaunchedEffect(Unit) {
+            TrackingUtils.requestInitialLocation(activity)
         }
 
 
         AnimatedVisibility(visible = isDialogVisible) {
+
             EndSessionDialog(
+                isLoading = isLoading,
                 onResumeSession = {
                     isDialogVisible = false
-                    sendCommandToService(Constants.START_OR_RESUME_SERVICE)
+                    TrackingUtils.sendCommandToService(context, Constants.START_OR_RESUME_SERVICE)
                 },
                 onFinishSession = {
                     isRunFinished = true
@@ -178,10 +200,10 @@ fun NavGraphBuilder.runNavigation(
         }
 
         BackHandler {
-            if (!state.isTracking && state.polylinePoints.isEmpty()) {
+            if (!state.isTracking && state.polylinePoints.isEmpty() && state.sessionDuration == 0L) {
                 navigateToHome()
             } else {
-                sendCommandToService(Constants.PAUSE_SERVICE)
+                TrackingUtils.sendCommandToService(context, Constants.PAUSE_SERVICE)
                 isDialogVisible = true
             }
         }
@@ -217,30 +239,58 @@ fun NavGraphBuilder.runNavigation(
             )
         }
 
-        var isLoading by remember {
-            mutableStateOf(false)
-        }
+
 
 
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             floatingActionButton = {
-                FloatingActionButton(
-                    onClick = {
-                        if (state.isTracking) {
-                            sendCommandToService(Constants.PAUSE_SERVICE)
-                        } else {
-                            sendCommandToService(Constants.START_OR_RESUME_SERVICE)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    FloatingActionButton(
+                        onClick = {
+                            if (state.isTracking) {
+                                TrackingUtils.sendCommandToService(context, Constants.PAUSE_SERVICE)
+                            } else {
+                                TrackingUtils.sendCommandToService(
+                                    context,
+                                    Constants.START_OR_RESUME_SERVICE
+                                )
+                            }
+                        },
+                        shape = CircleShape
+                    ) {
+                        Icon(
+                            imageVector = if (state.isTracking) Icons.Rounded.Stop else Icons.Default.PlayArrow,
+                            contentDescription = "run",
+                            tint = Color.Black
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    AnimatedVisibility(
+                        visible = !state.isTracking,
+                        enter = slideInHorizontally { -it } + fadeIn(),
+                        exit = slideOutHorizontally { -it } + fadeOut()
+                    ) {
+                        FloatingActionButton(
+                            onClick = {
+                                TrackingUtils.sendCommandToService(context, Constants.STOP_SERVICE)
+                                isDialogVisible = false
+                                isLoading = false
+                                navigateToHome()
+                            },
+                            shape = CircleShape
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.cross),
+                                contentDescription = "cancel",
+                                tint = Color.Black,
+                                modifier = Modifier.size(24.dp)
+                            )
                         }
-                    },
-                    shape = CircleShape
-                ) {
-                    Icon(
-                        imageVector = if (state.isTracking) Icons.Rounded.Stop else Icons.Default.PlayArrow,
-                        contentDescription = "run",
-                        tint = Color.Black
-                    )
+                    }
                 }
             },
             floatingActionButtonPosition = FabPosition.Center
@@ -253,6 +303,7 @@ fun NavGraphBuilder.runNavigation(
                 uiSettings = uiSettings,
                 mapProperties = mapProperties,
                 isDialogVisible = isDialogVisible,
+                onLoading = { isLoading = true },
                 onSnapshot = { mapBitmap ->
                     val run = Run(
                         sessionDuration = state.sessionDuration,
@@ -262,15 +313,21 @@ fun NavGraphBuilder.runNavigation(
 
                     runningSessionViewModel.saveSessionToFirebase(run, mapBitmap,
                         onSuccess = {
-                            Toast.makeText(context, "Session saved successfully", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Session saved successfully",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            TrackingUtils.sendCommandToService(context, Constants.STOP_SERVICE)
                             isDialogVisible = false
-                            sendCommandToService(Constants.STOP_SERVICE)
+                            isLoading = false
                             navigateToHome()
                         },
                         onError = { error ->
                             Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                            TrackingUtils.sendCommandToService(context, Constants.STOP_SERVICE)
                             isDialogVisible = false
-                            sendCommandToService(Constants.STOP_SERVICE)
+                            isLoading = false
                             navigateToHome()
                         }
                     )

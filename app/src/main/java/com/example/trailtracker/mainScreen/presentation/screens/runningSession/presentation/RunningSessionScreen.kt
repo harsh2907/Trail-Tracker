@@ -1,12 +1,14 @@
 package com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation
 
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -70,6 +72,7 @@ fun RunningSessionScreen(
     cameraPositionState: CameraPositionState,
     uiSettings: MapUiSettings,
     mapProperties: MapProperties,
+    onLoading:()->Unit,
     onSnapshot: (Bitmap) -> Unit
 ) {
 
@@ -103,7 +106,7 @@ fun RunningSessionScreen(
                             triggerCapture = true
                         }
                     }
-            } else modifier,
+            } else Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
             uiSettings = uiSettings,
             properties = mapProperties,
@@ -129,20 +132,28 @@ fun RunningSessionScreen(
             MapEffect(state, isRunFinished, triggerCapture, createSnapshotJob) { map ->
                 if (isRunFinished && triggerCapture && createSnapshotJob == null) {
                     triggerCapture = false
+                    onLoading()
 
-                    val boundsBuilder = LatLngBounds.builder()
-                    for (polyline in state.polylinePoints) {
-                        for (pos in polyline.points) {
+                    val polyPoints = state.polylinePoints.map { it.points }.flatten()
+
+                    if(polyPoints.isNotEmpty()){
+                        val boundsBuilder = LatLngBounds.builder()
+                        polyPoints.forEach {pos->
                             boundsBuilder.include(pos)
                         }
+
+                        Log.e("CameraBounds", "Bounds: " + boundsBuilder.build().toString());
+
+                        map.moveCamera(
+                            CameraUpdateFactory.newLatLngBounds(
+                                boundsBuilder.build(),
+                                100
+                            )
+                        )
+                    }else{
+                        Log.e("Bound Builder","Empty poly-points")
                     }
 
-                    map.moveCamera(
-                        CameraUpdateFactory.newLatLngBounds(
-                            boundsBuilder.build(),
-                            100
-                        )
-                    )
 
                     map.setOnCameraIdleListener {
                         createSnapshotJob?.cancel()

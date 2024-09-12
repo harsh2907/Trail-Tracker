@@ -219,6 +219,8 @@ class TrackingService : LifecycleService() {
         override fun onLocationResult(result: LocationResult) {
             super.onLocationResult(result)
 
+            Log.e("TrackingService",result.locations.size.toString())
+
 
             result.lastLocation?.let { lastLoc ->
                 lastLocation.update { lastLoc }
