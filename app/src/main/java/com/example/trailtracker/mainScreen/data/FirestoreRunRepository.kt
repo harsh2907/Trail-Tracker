@@ -1,6 +1,7 @@
 package com.example.trailtracker.mainScreen.data
 
 import android.graphics.Bitmap
+import android.util.Log
 import com.example.trailtracker.mainScreen.domain.models.Run
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ListenerRegistration
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import java.io.ByteArrayOutputStream
 
 class FirebaseRunRepository {
@@ -36,12 +38,12 @@ class FirebaseRunRepository {
     init {
         listenerRegistration = runsCollection.addSnapshotListener { snapshot, e ->
             if (e != null) {
-                // Handle error if needed
+                Log.e("FirebaseRunRepository",e.message,e)
                 return@addSnapshotListener
             }
             snapshot?.let {
                 val runs = it.toObjects(Run::class.java)
-                _runsFlow.value = runs
+                _runsFlow.update{ runs }
             }
         }
     }
