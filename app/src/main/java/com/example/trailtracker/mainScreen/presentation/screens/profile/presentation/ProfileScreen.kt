@@ -145,7 +145,7 @@ private fun ProfileStatsCard(
                         text = "Total Distance"
                     )
                     Text(
-                        text = "$totalDistance km"
+                        text = "${String.format("%.1f", totalDistance)} km"
                     )
                 }
             }
@@ -190,7 +190,7 @@ private fun ProfileStatsCard(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(text = "Average Speed")
-                    Text(text = "$avgSpeed km/h")
+                    Text(text = "${String.format("%.1f", avgSpeed)} km/h")
                 }
             }
 

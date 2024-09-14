@@ -1,9 +1,7 @@
 package com.example.trailtracker.mainScreen.presentation.screens
 
 import android.app.Activity
-import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -14,7 +12,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -42,7 +39,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
@@ -60,9 +56,7 @@ import com.example.trailtracker.mainScreen.presentation.screens.runningSession.p
 import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.RunningSessionScreen
 import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.RunningSessionViewModel
 import com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation.StatisticsScreen
-import com.example.trailtracker.mainScreen.services.TrackingService
 import com.example.trailtracker.navigation.Screens
-import com.example.trailtracker.ui.theme.UiColors
 import com.example.trailtracker.utils.Constants
 import com.example.trailtracker.utils.MapStyle
 import com.example.trailtracker.utils.TrackingUtils
@@ -86,19 +80,28 @@ fun MainScreenNavigation(
         composable(route = Destinations.Home.route) {
             val homeViewModel: HomeViewModel = hiltViewModel()
 
-            val sortType by homeViewModel.sortType.collectAsStateWithLifecycle()
-            val allRuns by homeViewModel.allRuns.collectAsStateWithLifecycle()
 
-            HomeScreen(
-                allRuns = allRuns,
-                sortType = sortType,
-                navigateToSession = {
-                    navController.navigate(Destinations.Home.Run.route) {
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+            val state by homeViewModel.allRunsState.collectAsStateWithLifecycle()
+            val currentUser by homeViewModel.currentUser.collectAsStateWithLifecycle()
+
+            if(currentUser == null){
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+                    CircularProgressIndicator()
                 }
-            )
+            }
+            else{
+                HomeScreen(
+                    state = state,
+                    user = currentUser!!,
+                    onSortTypeChanged = homeViewModel::onSortTypeChanged,
+                    navigateToSession = {
+                        navController.navigate(Destinations.Home.Run.route) {
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                )
+            }
         }
 
         composable(route = Destinations.Statistics.route) {

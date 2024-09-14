@@ -3,6 +3,7 @@ package com.example.trailtracker.mainScreen.presentation.screens.home.presentati
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.trailtracker.mainScreen.domain.models.Run
+import com.example.trailtracker.mainScreen.domain.repositories.FirebaseUserRepository
 import com.example.trailtracker.mainScreen.domain.repositories.RunRepository
 import com.example.trailtracker.mainScreen.domain.usecases.SortRunsUseCase
 import com.example.trailtracker.utils.SortType
@@ -17,29 +18,38 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val runRepository: RunRepository,
+    firebaseUserRepository: FirebaseUserRepository,
     private val sortRunsUseCase: SortRunsUseCase
-):ViewModel() {
+) : ViewModel() {
 
     private val _sortType = MutableStateFlow(SortType.DATE)
-    val sortType = _sortType.asStateFlow()
 
-    private val _allRuns = MutableStateFlow<List<Run>>(emptyList())
-    val allRuns = _allRuns.asStateFlow()
+    private val _allRunsState = MutableStateFlow(AllSessionsState())
+    val allRunsState = _allRunsState.asStateFlow()
+
+    val currentUser = firebaseUserRepository.currentUser
+
 
     init {
-        getAllRuns()
-    }
-
-
-    fun getAllRuns(){
         viewModelScope.launch {
-            sortRunsUseCase(_sortType.value).collectLatest {runs->
-                _allRuns.update { runs }
+            _allRunsState.update { it.copy(isLoading = true) }
+            sortRunsUseCase(_sortType.value).collectLatest { runs ->
+                _allRunsState.update { it.copy(runSessions = runs, isLoading = false) }
             }
         }
     }
 
-    fun deleteRun(run:Run){
+    fun onSortTypeChanged(sortType: SortType) {
+        viewModelScope.launch {
+            _allRunsState.update { it.copy(isLoading = true) }
+
+            sortRunsUseCase(sortType).collectLatest { sortedRuns ->
+                _allRunsState.update { it.copy(runSessions = sortedRuns, isLoading = false) }
+            }
+        }
+    }
+
+    fun deleteRun(run: Run) {
         viewModelScope.launch {
             runRepository.deleteRun(run)
         }
