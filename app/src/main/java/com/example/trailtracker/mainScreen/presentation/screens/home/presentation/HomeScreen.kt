@@ -92,7 +92,8 @@ fun HomeScreen(
                                 text = {
                                     Text(
                                         text = sortType.name.lowercase()
-                                            .apply { first().uppercase() })
+                                            .replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+                                    )
                                 },
                                 onClick = {
                                     isSortMenuVisible = false
