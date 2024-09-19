@@ -2,9 +2,9 @@ package com.example.trailtracker.mainScreen.presentation.screens.home.presentati
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.trailtracker.mainScreen.data.FirebaseRunRepository
 import com.example.trailtracker.mainScreen.domain.models.Run
 import com.example.trailtracker.mainScreen.domain.repositories.FirebaseUserRepository
-import com.example.trailtracker.mainScreen.domain.repositories.RunRepository
 import com.example.trailtracker.mainScreen.domain.usecases.SortRunsUseCase
 import com.example.trailtracker.utils.SortType
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,7 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val runRepository: RunRepository,
+    private val firebaseRunRepository: FirebaseRunRepository,
     firebaseUserRepository: FirebaseUserRepository,
     private val sortRunsUseCase: SortRunsUseCase
 ) : ViewModel() {
@@ -49,9 +49,30 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun deleteRun(run: Run) {
+    fun deleteRun(
+        run: Run,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
         viewModelScope.launch {
-            runRepository.deleteRun(run)
+            _allRunsState.update {
+                it.copy(
+                    runSessions = it.runSessions.toMutableList().apply { remove(run) }
+                )
+            }
+
+            firebaseRunRepository.deleteRun(run)
+                .onSuccess {
+                    onSuccess()
+                }
+                .onFailure {
+                    _allRunsState.update {
+                        it.copy(
+                            runSessions = it.runSessions.toMutableList().apply { remove(run) }
+                        )
+                    }
+                    onError(it.message ?: "Oops,an unknown error occurred")
+                }
         }
     }
 

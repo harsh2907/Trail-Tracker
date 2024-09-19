@@ -122,7 +122,6 @@ class FirebaseUserRepository {
         onError: (Exception) -> Unit
     ) {
         try {
-            val userRef = userRef
             auth.currentUser?.let { user ->
                 user.delete().await()
                 userRef.document(user.uid).delete().await()

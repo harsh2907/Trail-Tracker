@@ -91,3 +91,61 @@ fun EndSessionDialog(
     }
 }
 
+
+
+@Composable
+fun DeleteSessionDialog(
+    onCancel: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    Dialog(
+        onDismissRequest = onCancel,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Color.Black.copy(alpha = 0.5f)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+
+            AlertDialog(
+                title = {
+                    Text(text = "Running is paused")
+                },
+                text = {
+                    Text(text = "Do you want to resume or finish this session?")
+                },
+                containerColor = UiColors.EerieBlack,
+                onDismissRequest = onCancel,
+                confirmButton = {
+                    Button(
+                        onClick = onDelete,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = UiColors.primaryColor
+                        )
+                    ) {
+                        Text(
+                            text = "Delete",
+                            color = Color.Black
+                        )
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = onCancel,
+                    ) {
+                        Text(
+                            text = "Cancel",
+                            color = Color.White
+                        )
+                    }
+                },
+                properties = DialogProperties(usePlatformDefaultWidth = false)
+            )
+        }
+
+    }
+}

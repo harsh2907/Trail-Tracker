@@ -79,17 +79,16 @@ fun MainScreenNavigation(
 
         composable(route = Destinations.Home.route) {
             val homeViewModel: HomeViewModel = hiltViewModel()
-
+            val context = LocalContext.current
 
             val state by homeViewModel.allRunsState.collectAsStateWithLifecycle()
             val currentUser by homeViewModel.currentUser.collectAsStateWithLifecycle()
 
-            if(currentUser == null){
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+            if (currentUser == null) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
-            }
-            else{
+            } else {
                 HomeScreen(
                     state = state,
                     user = currentUser!!,
@@ -99,6 +98,17 @@ fun MainScreenNavigation(
                             launchSingleTop = true
                             restoreState = true
                         }
+                    },
+                    onDeleteSession = { run ->
+                        homeViewModel.deleteRun(
+                            run = run,
+                            onSuccess = {
+                                Toast.makeText(context, "Session deleted successfully", Toast.LENGTH_SHORT).show()
+                            },
+                            onError = {
+                                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                            }
+                        )
                     }
                 )
             }
