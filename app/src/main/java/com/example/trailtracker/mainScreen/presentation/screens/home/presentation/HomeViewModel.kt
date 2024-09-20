@@ -18,7 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val firebaseRunRepository: FirebaseRunRepository,
-    firebaseUserRepository: FirebaseUserRepository,
+    private val firebaseUserRepository: FirebaseUserRepository,
     private val sortRunsUseCase: SortRunsUseCase
 ) : ViewModel() {
 
@@ -65,16 +65,23 @@ class HomeViewModel @Inject constructor(
                 .onSuccess {
                     onSuccess()
                 }
-                .onFailure {
+                .onFailure {error->
                     _allRunsState.update {
                         it.copy(
                             runSessions = it.runSessions.toMutableList().apply { remove(run) }
                         )
                     }
-                    onError(it.message ?: "Oops,an unknown error occurred")
+                    onError(error.message ?: "Oops,an unknown error occurred")
                 }
         }
     }
 
+    fun signOut(onSuccess: () -> Unit,onError: (String) -> Unit){
+        firebaseUserRepository.signOut()
+            .onSuccess{onSuccess()}
+            .onFailure {
+                onError(it.message ?: "Oops,an unknown error occurred")
+            }
+    }
 
 }

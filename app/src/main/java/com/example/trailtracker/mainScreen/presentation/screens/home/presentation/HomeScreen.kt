@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -38,6 +39,7 @@ import com.example.trailtracker.R
 import com.example.trailtracker.mainScreen.domain.models.Run
 import com.example.trailtracker.mainScreen.domain.models.User
 import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.DeleteSessionDialog
+import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.SignOutDialog
 import com.example.trailtracker.ui.theme.UiColors
 import com.example.trailtracker.utils.SortType
 
@@ -48,24 +50,34 @@ fun HomeScreen(
     state: AllSessionsState,
     onSortTypeChanged: (SortType) -> Unit,
     navigateToSession: () -> Unit,
-    onDeleteSession: (run: Run) -> Unit
+    onDeleteSession: (run: Run) -> Unit,
+    onSignOut: () -> Unit
 ) {
     var isSortMenuVisible by remember { mutableStateOf(false) }
-    var showDeleteDialog by remember { mutableStateOf(false) }
+    var showDeleteSessionDialog by remember { mutableStateOf(false) }
+    var showSignOutDialog by remember { mutableStateOf(false) }
     var sessionToDelete: Run? by remember { mutableStateOf(null) }
 
-    AnimatedVisibility(visible = showDeleteDialog) {
+    AnimatedVisibility(visible = showDeleteSessionDialog) {
         DeleteSessionDialog(
             onCancel = {
-                showDeleteDialog = false
+                showDeleteSessionDialog = false
                 sessionToDelete = null
             },
             onDelete = {
                 sessionToDelete?.let {
-                    showDeleteDialog = false
+                    showDeleteSessionDialog = false
                     onDeleteSession(it)
                 }
             }
+        )
+    }
+    AnimatedVisibility(visible = showSignOutDialog) {
+        SignOutDialog(
+            onCancel = {
+                showSignOutDialog = false
+            },
+            onSignOut = onSignOut
         )
     }
 
@@ -75,9 +87,11 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text(text = user.username.takeWhile { it != ' ' }) },
                 actions = {
-                    IconButton(onClick = {
-                        isSortMenuVisible = true
-                    }) {
+                    IconButton(
+                        onClick = {
+                            isSortMenuVisible = true
+                        }
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Sort,
                             contentDescription = "sort"
@@ -102,6 +116,13 @@ fun HomeScreen(
                                 }
                             )
                         }
+                    }
+
+                    IconButton(onClick = { showSignOutDialog = true }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                            contentDescription = "more"
+                        )
                     }
                 })
         },
@@ -160,7 +181,7 @@ fun HomeScreen(
                         run = run,
                         onLongClick = {
                             sessionToDelete = run
-                            showDeleteDialog = true
+                            showDeleteSessionDialog = true
                         },
                         onClick = {
 

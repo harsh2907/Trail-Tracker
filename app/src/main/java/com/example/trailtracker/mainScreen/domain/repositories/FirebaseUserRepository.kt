@@ -6,6 +6,7 @@ import com.example.trailtracker.mainScreen.domain.models.User
 import com.example.trailtracker.utils.Constants
 import com.example.trailtracker.utils.RequestState
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
@@ -28,9 +29,15 @@ class FirebaseUserRepository {
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser
 
+    // Store the listener registration
+    private var userListenerRegistration: ListenerRegistration? = null
+
     fun getCurrentUser() {
         Firebase.auth.uid?.let { currentUserId ->
-            userRef.document(currentUserId)
+            // Stop any previous listener to avoid multiple listeners
+            userListenerRegistration?.remove()
+
+            userListenerRegistration = userRef.document(currentUserId)
                 .addSnapshotListener { snapshot, exception ->
                     if (exception != null) {
                         // Handle error
@@ -42,17 +49,23 @@ class FirebaseUserRepository {
                         _currentUser.update { user }
                     }
                 }
-
         }
     }
+
 
     init {
         getCurrentUser()
     }
 
-    fun signOut() {
+    fun signOut() = runCatching {
         Firebase.auth.signOut()
+        // Only remove the listener and update state if sign-out succeeds
+        userListenerRegistration?.remove()
         _currentUser.update { null }
+    }.onFailure { exception ->
+        // Log the error or notify the user about the failure
+        Log.e("FirebaseUserRepository", "Sign-out failed", exception)
+        // Optionally, handle further actions like showing a message to the user
     }
 
 

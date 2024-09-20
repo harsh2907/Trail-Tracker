@@ -32,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,6 +66,8 @@ import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreenNavigation(
@@ -83,34 +86,58 @@ fun MainScreenNavigation(
 
             val state by homeViewModel.allRunsState.collectAsStateWithLifecycle()
             val currentUser by homeViewModel.currentUser.collectAsStateWithLifecycle()
+            val scope = rememberCoroutineScope()
 
             if (currentUser == null) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
             } else {
-                HomeScreen(
-                    state = state,
-                    user = currentUser!!,
-                    onSortTypeChanged = homeViewModel::onSortTypeChanged,
-                    navigateToSession = {
-                        navController.navigate(Destinations.Home.Run.route) {
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
-                    onDeleteSession = { run ->
-                        homeViewModel.deleteRun(
-                            run = run,
-                            onSuccess = {
-                                Toast.makeText(context, "Session deleted successfully", Toast.LENGTH_SHORT).show()
-                            },
-                            onError = {
-                                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                currentUser?.let { user ->
+                    HomeScreen(
+                        state = state,
+                        user = user,
+                        onSortTypeChanged = homeViewModel::onSortTypeChanged,
+                        navigateToSession = {
+                            navController.navigate(Destinations.Home.Run.route) {
+                                launchSingleTop = true
+                                restoreState = true
                             }
-                        )
-                    }
-                )
+                        },
+                        onDeleteSession = { run ->
+                            homeViewModel.deleteRun(
+                                run = run,
+                                onSuccess = {
+                                    Toast.makeText(
+                                        context,
+                                        "Session deleted successfully",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onError = {
+                                    Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        },
+                        onSignOut = {
+                            homeViewModel.signOut(
+                                onSuccess = {
+                                    scope.launch {
+                                        delay(100) // Small delay to ensure smooth UI updates
+                                        navController.popBackStack()
+                                        navController.navigate(Screens.Auth.route)
+                                    }
+                                    navController.popBackStack()
+                                    navController.navigate(Screens.Auth.route)
+                                },
+                                onError = {
+                                    Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        }
+                    )
+                }
+
             }
         }
 

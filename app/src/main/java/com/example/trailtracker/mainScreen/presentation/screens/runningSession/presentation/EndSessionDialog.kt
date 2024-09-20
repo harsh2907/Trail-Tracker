@@ -113,10 +113,10 @@ fun DeleteSessionDialog(
 
             AlertDialog(
                 title = {
-                    Text(text = "Running is paused")
+                    Text(text = "Delete Session?")
                 },
                 text = {
-                    Text(text = "Do you want to resume or finish this session?")
+                    Text(text = "Do you want to delete this session?")
                 },
                 containerColor = UiColors.EerieBlack,
                 onDismissRequest = onCancel,
@@ -146,6 +146,61 @@ fun DeleteSessionDialog(
                 properties = DialogProperties(usePlatformDefaultWidth = false)
             )
         }
+    }
+}
 
+@Composable
+fun SignOutDialog(
+    onCancel: () -> Unit,
+    onSignOut: () -> Unit,
+) {
+    Dialog(
+        onDismissRequest = onCancel,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Color.Black.copy(alpha = 0.5f)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+
+            AlertDialog(
+                title = {
+                    Text(text = "Sign out")
+                },
+                text = {
+                    Text(text = "Do you want to sign out?")
+                },
+                containerColor = UiColors.EerieBlack,
+                onDismissRequest = onCancel,
+                confirmButton = {
+                    Button(
+                        onClick = onSignOut,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = UiColors.primaryColor
+                        )
+                    ) {
+                        Text(
+                            text = "Sign Out",
+                            color = Color.Black
+                        )
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = onCancel,
+                    ) {
+                        Text(
+                            text = "Cancel",
+                            color = Color.White
+                        )
+                    }
+                },
+                properties = DialogProperties(usePlatformDefaultWidth = false)
+            )
+        }
     }
 }
