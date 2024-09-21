@@ -58,14 +58,14 @@ class FirebaseUserRepository {
     }
 
     fun signOut() = runCatching {
+        userListenerRegistration?.remove()
         Firebase.auth.signOut()
         // Only remove the listener and update state if sign-out succeeds
-        userListenerRegistration?.remove()
         _currentUser.update { null }
     }.onFailure { exception ->
         // Log the error or notify the user about the failure
         Log.e("FirebaseUserRepository", "Sign-out failed", exception)
-        // Optionally, handle further actions like showing a message to the user
+        getCurrentUser()
     }
 
 
@@ -113,7 +113,7 @@ class FirebaseUserRepository {
         }
     }
 
-    suspend fun addImageToStorage(
+    private suspend fun addImageToStorage(
         userId: String,
         fileId: String = "profile_image",
         fileUri: Uri?

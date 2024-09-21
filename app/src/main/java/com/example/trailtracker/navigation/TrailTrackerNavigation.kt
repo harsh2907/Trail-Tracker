@@ -87,7 +87,7 @@ fun TrailTrackerNavigation(
                     navController.navigate(Screens.MainScreen.route)
                 } else {
                     Log.e("Auth",authState.error.toString())
-                    //Toast.makeText(context, authState.error , Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, authState.error , Toast.LENGTH_SHORT).show()
                 }
             }
 
