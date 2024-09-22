@@ -54,7 +54,7 @@ class FirebaseRunRepository {
     }
 
 
-    suspend fun saveRunSession(runEntity: RunEntity) = runCatching {
+    suspend fun uploadRunSession(runEntity: RunEntity) = runCatching {
         val documentRef = runsCollection.document(runEntity.id)
 
         val imageUrl = uploadBitmapToStorage(runEntity.id, runEntity.imageBitmap)
@@ -140,7 +140,7 @@ class FirebaseRunRepository {
 
 
 
-    private suspend fun uploadBitmapToStorage(
+    suspend fun uploadBitmapToStorage(
         runId: String,
         bitmap: Bitmap
     ): String? {

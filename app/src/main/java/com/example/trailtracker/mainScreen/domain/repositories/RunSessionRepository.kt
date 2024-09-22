@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 interface RunSessionRepository {
     suspend fun upsertRun(run: RunEntity)
     suspend fun deleteRun(run: RunEntity)
+    suspend fun getUnsyncedRuns(): List<RunEntity>
     suspend fun deleteAllRuns()
     suspend fun getRunById(id: Long): RunEntity?
     fun getAllRunsSortedByDate(): Flow<List<RunEntity>>

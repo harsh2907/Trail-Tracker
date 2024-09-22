@@ -18,6 +18,10 @@ class RunSessionOfflineRepositoryImpl @Inject constructor(
         runDao.deleteRun(run)
     }
 
+    override suspend fun getUnsyncedRuns(): List<RunEntity> {
+        return runDao.getUnsyncedRuns()
+    }
+
     override suspend fun deleteAllRuns() {
         runDao.deleteAllRuns()
     }

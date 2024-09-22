@@ -42,6 +42,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -72,7 +73,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 fun MainScreenNavigation(
     modifier: Modifier = Modifier,
     navController: NavHostController,
-    navigateToAuthScreen:()->Unit
+    navigateToAuthScreen: () -> Unit
 ) {
     NavHost(
         modifier = modifier,
@@ -80,13 +81,15 @@ fun MainScreenNavigation(
         startDestination = Destinations.Home.route
     ) {
 
-        composable(route = Destinations.Home.route) {
-            val homeViewModel: HomeViewModel = hiltViewModel()
+        composable(route = Destinations.Home.route) { backstack ->
+            val parentEntry = remember(backstack) {
+                navController.getBackStackEntry(Destinations.Home.route)
+            }
+            val homeViewModel: HomeViewModel = hiltViewModel(parentEntry)
             val context = LocalContext.current
 
             val state by homeViewModel.allRunsState.collectAsStateWithLifecycle()
             val currentUser by homeViewModel.currentUser.collectAsStateWithLifecycle()
-            val scope = rememberCoroutineScope()
 
             if (currentUser == null) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -187,6 +190,7 @@ fun MainScreenNavigation(
         }
 
         runNavigation(
+            navController = navController,
             navigateToHome = {
                 navController.navigateUp()
             }
@@ -196,10 +200,15 @@ fun MainScreenNavigation(
 
 
 fun NavGraphBuilder.runNavigation(
+    navController: NavHostController,
     navigateToHome: () -> Unit
 ) {
-    composable(route = Destinations.Home.Run.route) {
+    composable(route = Destinations.Home.Run.route) { backstack ->
+        val parentEntry = remember(backstack) {
+            navController.getBackStackEntry(Destinations.Home.route)
+        }
 
+        val homeViewModel: HomeViewModel = hiltViewModel(parentEntry)
         val runningSessionViewModel: RunningSessionViewModel = hiltViewModel()
         val state by runningSessionViewModel.runSessionState.collectAsStateWithLifecycle()
         val context = LocalContext.current
@@ -271,6 +280,7 @@ fun NavGraphBuilder.runNavigation(
         }
 
 
+        val workerId by runningSessionViewModel.workerId.collectAsStateWithLifecycle()
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -342,33 +352,36 @@ fun NavGraphBuilder.runNavigation(
                     )
 
                     runningSessionViewModel.saveSessionToRoomDatabase(runEntity)
+                    workerId?.let { homeViewModel.setWorkerId(it) }
+
+
                     TrackingUtils.sendCommandToService(context, Constants.STOP_SERVICE)
                     isDialogVisible = false
                     isLoading = false
                     navigateToHome()
 
-/* Do not remove
-                    runningSessionViewModel.saveSessionToFirebase(run, mapBitmap,
-                        onSuccess = {
-                            Toast.makeText(
-                                context,
-                                "Session saved successfully",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            TrackingUtils.sendCommandToService(context, Constants.STOP_SERVICE)
-                            isDialogVisible = false
-                            isLoading = false
-                            navigateToHome()
-                        },
-                        onError = { error ->
-                            Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
-                            TrackingUtils.sendCommandToService(context, Constants.STOP_SERVICE)
-                            isDialogVisible = false
-                            isLoading = false
-                            navigateToHome()
-                        }
-                    )
-*/
+                    /* Do not remove
+                                        runningSessionViewModel.saveSessionToFirebase(run, mapBitmap,
+                                            onSuccess = {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Session saved successfully",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                TrackingUtils.sendCommandToService(context, Constants.STOP_SERVICE)
+                                                isDialogVisible = false
+                                                isLoading = false
+                                                navigateToHome()
+                                            },
+                                            onError = { error ->
+                                                Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                                                TrackingUtils.sendCommandToService(context, Constants.STOP_SERVICE)
+                                                isDialogVisible = false
+                                                isLoading = false
+                                                navigateToHome()
+                                            }
+                                        )
+                    */
                 }
             )
         }

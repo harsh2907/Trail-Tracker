@@ -2,24 +2,30 @@ package com.example.trailtracker.mainScreen.presentation.screens.home.presentati
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkManager
 import com.example.trailtracker.mainScreen.data.FirebaseRunRepository
 import com.example.trailtracker.mainScreen.domain.models.Run
 import com.example.trailtracker.mainScreen.domain.repositories.FirebaseUserRepository
 import com.example.trailtracker.mainScreen.domain.usecases.SortRunsUseCase
+import com.example.trailtracker.mainScreen.worker.UploadSessionsToFirebaseWorker
 import com.example.trailtracker.utils.SortType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val firebaseRunRepository: FirebaseRunRepository,
     private val firebaseUserRepository: FirebaseUserRepository,
-    private val sortRunsUseCase: SortRunsUseCase
+    private val sortRunsUseCase: SortRunsUseCase,
+    private val workManager: WorkManager
 ) : ViewModel() {
 
     private val _sortType = MutableStateFlow(SortType.DATE)
@@ -28,6 +34,23 @@ class HomeViewModel @Inject constructor(
     val allRunsState = _allRunsState.asStateFlow()
 
     val currentUser = firebaseUserRepository.currentUser
+
+    private val _workerId = MutableStateFlow<UUID?>(null)
+
+
+    fun getDetails() {
+        viewModelScope.launch {
+            _workerId.collectLatest { id ->
+                if (id != null) {
+                    workManager.getWorkInfoByIdFlow(id).collectLatest {
+                        firebaseRunRepository.getAllRunsSortedByDate()
+                    }
+                }
+            }
+        }
+    }
+
+
 
 
     init {
@@ -38,6 +61,8 @@ class HomeViewModel @Inject constructor(
             sortRunsUseCase(_sortType.value).collectLatest { runs ->
                 _allRunsState.update { it.copy(runSessions = runs, isLoading = false) }
             }
+
+            getDetails()
         }
     }
 
@@ -84,6 +109,10 @@ class HomeViewModel @Inject constructor(
             .onFailure {
                 onError(it.message ?: "Oops,an unknown error occurred")
             }
+    }
+
+    fun setWorkerId(uuid: UUID) {
+        _workerId.update { uuid }
     }
 
 }

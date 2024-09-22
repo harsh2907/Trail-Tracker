@@ -2,6 +2,7 @@ package com.example.trailtracker.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.work.WorkManager
 import com.example.trailtracker.mainScreen.presentation.screens.home.data.local.RunDao
 import com.example.trailtracker.mainScreen.presentation.screens.home.data.local.RunDatabase
 import com.example.trailtracker.datastore.DataStoreUtils
@@ -10,6 +11,7 @@ import com.example.trailtracker.mainScreen.domain.repositories.FirebaseUserRepos
 import com.example.trailtracker.mainScreen.domain.repositories.RunSessionRepository
 import com.example.trailtracker.mainScreen.domain.usecases.SortRunsUseCase
 import com.example.trailtracker.mainScreen.presentation.screens.home.data.repository.RunSessionOfflineRepositoryImpl
+import com.example.trailtracker.mainScreen.worker.UploadSessionsToFirebaseWorker
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,6 +37,7 @@ object AppModule {
         ).build()
     }
 
+
     @Provides
     @Singleton
     fun provideRunDao(
@@ -45,7 +48,7 @@ object AppModule {
     @Singleton
     fun provideRunRepository(
         runDao: RunDao
-    ):RunSessionRepository = RunSessionOfflineRepositoryImpl(runDao)
+    ): RunSessionRepository = RunSessionOfflineRepositoryImpl(runDao)
 
     @Provides
     @Singleton
@@ -60,7 +63,7 @@ object AppModule {
     @Singleton
     fun provideSortRunsUseCase(
         firebaseRunRepository: FirebaseRunRepository
-    ): SortRunsUseCase = SortRunsUseCase(firebaseRunRepository )
+    ): SortRunsUseCase = SortRunsUseCase(firebaseRunRepository)
 
 
 }
