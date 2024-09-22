@@ -142,5 +142,7 @@ dependencies {
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
 
+    //Work Manager
+    implementation(libs.androidx.work.runtime.ktx)
 
 }

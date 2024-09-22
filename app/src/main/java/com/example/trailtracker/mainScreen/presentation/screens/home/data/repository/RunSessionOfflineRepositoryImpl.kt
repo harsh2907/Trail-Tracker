@@ -1,21 +1,20 @@
 package com.example.trailtracker.mainScreen.presentation.screens.home.data.repository
 
 import com.example.trailtracker.mainScreen.presentation.screens.home.data.local.RunDao
-import com.example.trailtracker.mainScreen.domain.models.Run
-import com.example.trailtracker.mainScreen.domain.repositories.RunRepository
+import com.example.trailtracker.mainScreen.domain.models.RunEntity
+import com.example.trailtracker.mainScreen.domain.repositories.RunSessionRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class RunRepositoryImpl @Inject constructor(
+class RunSessionOfflineRepositoryImpl @Inject constructor(
     private val runDao: RunDao
-) : RunRepository {
+) : RunSessionRepository {
 
-    override suspend fun upsertRun(run: Run) {
+    override suspend fun upsertRun(run: RunEntity) {
         runDao.upsertRun(run)
     }
 
-
-    override suspend fun deleteRun(run: Run) {
+    override suspend fun deleteRun(run: RunEntity) {
         runDao.deleteRun(run)
     }
 
@@ -23,27 +22,27 @@ class RunRepositoryImpl @Inject constructor(
         runDao.deleteAllRuns()
     }
 
-    override fun getAllRunsSortedByDate(): Flow<List<Run>> {
+    override fun getAllRunsSortedByDate(): Flow<List<RunEntity>> {
         return runDao.getAllRunsSortedByDate()
     }
 
-    override fun getAllRunsSortedBySpeed(): Flow<List<Run>> {
+    override fun getAllRunsSortedBySpeed(): Flow<List<RunEntity>> {
         return runDao.getAllRunsSortedBySpeed()
     }
 
-    override fun getAllRunsSortedByDistance(): Flow<List<Run>> {
+    override fun getAllRunsSortedByDistance(): Flow<List<RunEntity>> {
         return runDao.getAllRunsSortedByDistance()
     }
 
-    override fun getAllRunsSortedByDuration(): Flow<List<Run>> {
+    override fun getAllRunsSortedByDuration(): Flow<List<RunEntity>> {
         return runDao.getAllRunsSortedByDuration()
     }
 
-    override fun getAllRunsSortedByCalories(): Flow<List<Run>> {
+    override fun getAllRunsSortedByCalories(): Flow<List<RunEntity>> {
         return runDao.getAllRunsSortedByCalories()
     }
 
-    override suspend fun getRunById(id: Long): Run? {
+    override suspend fun getRunById(id: Long): RunEntity? {
         return runDao.getRunById(id)
     }
 

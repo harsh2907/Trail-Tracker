@@ -142,7 +142,7 @@ private fun ProfileStatsCard(
                         text = "Total Distance"
                     )
                     Text(
-                        text = "${String.format(Locale.getDefault(),"%.1f", totalDistance)} km"
+                        text = "${String.format(Locale.getDefault(),"%.1f", totalDistance)} m"
                     )
                 }
             }

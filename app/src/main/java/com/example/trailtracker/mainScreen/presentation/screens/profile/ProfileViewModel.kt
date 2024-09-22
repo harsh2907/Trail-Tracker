@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.trailtracker.mainScreen.data.FirebaseRunRepository
 import com.example.trailtracker.mainScreen.domain.repositories.FirebaseUserRepository
-import com.example.trailtracker.mainScreen.domain.repositories.RunRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject

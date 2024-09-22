@@ -109,7 +109,7 @@ fun RunSessionCard(
                     )
 
                     Text(
-                        text = "${run.distanceCovered.roundToInt()} m",
+                        text = "${run.distanceCoveredInMeters.roundToInt()} m",
                         style = MaterialTheme.typography.titleMedium,
                     )
                 }

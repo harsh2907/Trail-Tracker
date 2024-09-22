@@ -6,7 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.trailtracker.mainScreen.data.FirebaseRunRepository
 import com.example.trailtracker.mainScreen.domain.models.Run
-import com.example.trailtracker.mainScreen.domain.repositories.RunRepository
+import com.example.trailtracker.mainScreen.domain.models.RunEntity
+import com.example.trailtracker.mainScreen.domain.repositories.RunSessionRepository
 import com.example.trailtracker.mainScreen.services.TrackingService
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +20,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RunningSessionViewModel @Inject constructor(
-    private val runRepository: RunRepository,
+    private val runSessionRepository: RunSessionRepository,
     private val firebaseRunRepository: FirebaseRunRepository
 ) : ViewModel() {
 
@@ -51,13 +52,12 @@ class RunningSessionViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), RunSessionState())
 
     fun saveSessionToFirebase(
-        run: Run,
-        image: Bitmap,
+        runEntity: RunEntity,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
         viewModelScope.launch {
-            val res = firebaseRunRepository.saveRunSession(run, image)
+            val res = firebaseRunRepository.saveRunSession(runEntity)
             if(res.isSuccess){
                 onSuccess()
             }else if(res.isFailure){
@@ -66,9 +66,9 @@ class RunningSessionViewModel @Inject constructor(
         }
     }
 
-    fun saveSession(run: Run, image: Bitmap) {
+    fun saveSessionToRoomDatabase(runEntity: RunEntity) {
         viewModelScope.launch {
-            runRepository.upsertRun(run)
+            runSessionRepository.upsertRun(runEntity)
         }
     }
 

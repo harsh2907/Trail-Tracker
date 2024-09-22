@@ -32,6 +32,8 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            firebaseUserRepository.getCurrentUser()
+
             _allRunsState.update { it.copy(isLoading = true) }
             sortRunsUseCase(_sortType.value).collectLatest { runs ->
                 _allRunsState.update { it.copy(runSessions = runs, isLoading = false) }
@@ -65,7 +67,7 @@ class HomeViewModel @Inject constructor(
                 .onSuccess {
                     onSuccess()
                 }
-                .onFailure {error->
+                .onFailure { error ->
                     _allRunsState.update {
                         it.copy(
                             runSessions = it.runSessions.toMutableList().apply { remove(run) }
@@ -76,9 +78,9 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun signOut(onSuccess: () -> Unit,onError: (String) -> Unit){
+    fun signOut(onSuccess: () -> Unit, onError: (String) -> Unit) {
         firebaseUserRepository.signOut()
-            .onSuccess{onSuccess()}
+            .onSuccess { onSuccess() }
             .onFailure {
                 onError(it.message ?: "Oops,an unknown error occurred")
             }

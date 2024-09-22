@@ -34,7 +34,7 @@ class AuthenticationViewModel @Inject constructor(
 
     init {
         _startDestination.update {
-            if (Firebase.auth.uid == null) Screens.OnBoardingScreen.route else Screens.MainScreen.route
+            if (Firebase.auth.uid == null) Screens.AuthScreen.route else Screens.MainScreen.route
         }
     }
 

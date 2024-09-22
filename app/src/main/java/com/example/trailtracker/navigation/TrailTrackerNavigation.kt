@@ -24,6 +24,7 @@ import com.example.trailtracker.mainScreen.presentation.MainScreen
 import com.example.trailtracker.onboarding.screens.OnBoardingScreen
 import com.example.trailtracker.onboarding.AuthenticationViewModel
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -42,7 +43,7 @@ fun TrailTrackerNavigation(
             )
         }
 
-        composable(route = Screens.OnBoardingScreen.route) {
+        composable(route = Screens.AuthScreen.route) {
 
             val authViewModel: AuthenticationViewModel = hiltViewModel()
             val authState by authViewModel.authState.collectAsStateWithLifecycle()
@@ -86,8 +87,10 @@ fun TrailTrackerNavigation(
                     navController.popBackStack()
                     navController.navigate(Screens.MainScreen.route)
                 } else {
-                    Log.e("Auth",authState.error.toString())
-                    Toast.makeText(context, authState.error , Toast.LENGTH_SHORT).show()
+                    if(!authState.error.isNullOrEmpty()){
+                        Log.e("Auth",authState.error.toString())
+                        Toast.makeText(context, authState.error , Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
 
@@ -102,7 +105,18 @@ fun TrailTrackerNavigation(
 
 
         composable(route = Screens.MainScreen.route) {
-            MainScreen()
+            val scope = rememberCoroutineScope()
+            MainScreen(
+                navigateToAuthScreen = {
+                    scope.launch {
+                        delay(100)
+                        navController.navigate(Screens.AuthScreen.route) {
+                            popUpTo(0) { inclusive = true } // Clear back stack
+                            launchSingleTop = true
+                        }
+                    }
+                }
+            )
         }
     }
 }

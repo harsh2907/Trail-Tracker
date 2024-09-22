@@ -7,9 +7,9 @@ import com.example.trailtracker.mainScreen.presentation.screens.home.data.local.
 import com.example.trailtracker.datastore.DataStoreUtils
 import com.example.trailtracker.mainScreen.data.FirebaseRunRepository
 import com.example.trailtracker.mainScreen.domain.repositories.FirebaseUserRepository
-import com.example.trailtracker.mainScreen.domain.repositories.RunRepository
+import com.example.trailtracker.mainScreen.domain.repositories.RunSessionRepository
 import com.example.trailtracker.mainScreen.domain.usecases.SortRunsUseCase
-import com.example.trailtracker.mainScreen.presentation.screens.home.data.repository.RunRepositoryImpl
+import com.example.trailtracker.mainScreen.presentation.screens.home.data.repository.RunSessionOfflineRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -45,7 +45,7 @@ object AppModule {
     @Singleton
     fun provideRunRepository(
         runDao: RunDao
-    ):RunRepository = RunRepositoryImpl(runDao)
+    ):RunSessionRepository = RunSessionOfflineRepositoryImpl(runDao)
 
     @Provides
     @Singleton

@@ -20,14 +20,19 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.trailtracker.MainActivity
 import com.example.trailtracker.mainScreen.presentation.screens.MainScreenNavigation
+import com.example.trailtracker.navigation.Screens
 import com.example.trailtracker.ui.theme.UiColors
 import com.example.trailtracker.utils.TrackingUtils
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    navigateToAuthScreen:()->Unit
+) {
     val bottomNavController = rememberNavController()
     val backstack by bottomNavController.currentBackStackEntryAsState()
 
@@ -87,7 +92,8 @@ fun MainScreen() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            navController = bottomNavController
+            navController = bottomNavController,
+            navigateToAuthScreen = navigateToAuthScreen
         )
     }
 }

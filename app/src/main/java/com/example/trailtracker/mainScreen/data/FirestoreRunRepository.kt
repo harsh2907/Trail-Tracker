@@ -3,6 +3,7 @@ package com.example.trailtracker.mainScreen.data
 import android.graphics.Bitmap
 import android.util.Log
 import com.example.trailtracker.mainScreen.domain.models.Run
+import com.example.trailtracker.mainScreen.domain.models.RunEntity
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
@@ -53,11 +54,11 @@ class FirebaseRunRepository {
     }
 
 
-    suspend fun saveRunSession(run: Run, image: Bitmap) = runCatching {
-        val documentRef = runsCollection.document(run.id)
+    suspend fun saveRunSession(runEntity: RunEntity) = runCatching {
+        val documentRef = runsCollection.document(runEntity.id)
 
-        val imageUrl = uploadImageToStorage(run.id, image)
-        val runToUpload = run.copy(imageUrl = imageUrl)
+        val imageUrl = uploadBitmapToStorage(runEntity.id, runEntity.imageBitmap)
+        val runToUpload = runEntity.toRun().copy(imageUrl = imageUrl)
 
         documentRef.set(runToUpload).await()
     }
@@ -117,13 +118,13 @@ class FirebaseRunRepository {
     }
 
     fun getTotalDistanceCoveredForSessions(): Flow<Double> {
-        return runsFlow.map {run-> run.sumOf { it.distanceCovered } }
+        return runsFlow.map {run-> run.sumOf { it.distanceCoveredInMeters } }
 
     }
 
     fun getTotalAverageSpeedForSessions(): Flow<Double> {
         return runsFlow.map { runs ->
-            val totalDistance = runs.sumOf { it.distanceCovered }
+            val totalDistance = runs.sumOf { it.distanceCoveredInMeters }
             val totalTime = runs.sumOf { it.sessionDuration }
             if (totalTime > 0) (totalDistance / totalTime) * 3600 else 0.0
         }
@@ -139,7 +140,7 @@ class FirebaseRunRepository {
 
 
 
-    private suspend fun uploadImageToStorage(
+    private suspend fun uploadBitmapToStorage(
         runId: String,
         bitmap: Bitmap
     ): String? {

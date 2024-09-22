@@ -48,6 +48,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.trailtracker.R
 import com.example.trailtracker.mainScreen.domain.models.Run
+import com.example.trailtracker.mainScreen.domain.models.RunEntity
 import com.example.trailtracker.mainScreen.presentation.Destinations
 import com.example.trailtracker.mainScreen.presentation.screens.home.presentation.HomeScreen
 import com.example.trailtracker.mainScreen.presentation.screens.home.presentation.HomeViewModel
@@ -66,13 +67,12 @@ import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreenNavigation(
+    modifier: Modifier = Modifier,
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    navigateToAuthScreen:()->Unit
 ) {
     NavHost(
         modifier = modifier,
@@ -121,15 +121,7 @@ fun MainScreenNavigation(
                         },
                         onSignOut = {
                             homeViewModel.signOut(
-                                onSuccess = {
-                                    scope.launch {
-                                        delay(100) // Small delay to ensure smooth UI updates
-                                        navController.popBackStack()
-                                        navController.navigate(Screens.Auth.route)
-                                    }
-                                    navController.popBackStack()
-                                    navController.navigate(Screens.Auth.route)
-                                },
+                                onSuccess = navigateToAuthScreen,
                                 onError = {
                                     Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
                                 }
@@ -137,7 +129,6 @@ fun MainScreenNavigation(
                         }
                     )
                 }
-
             }
         }
 
@@ -160,7 +151,7 @@ fun MainScreenNavigation(
             LaunchedEffect(key1 = currentUser) {
                 if (currentUser == null) {
                     navController.popBackStack()
-                    navController.navigate(Screens.OnBoardingScreen.route)
+                    navController.navigate(Screens.AuthScreen.route)
                 }
             }
 
@@ -343,12 +334,20 @@ fun NavGraphBuilder.runNavigation(
                 isDialogVisible = isDialogVisible,
                 onLoading = { isLoading = true },
                 onSnapshot = { mapBitmap ->
-                    val run = Run(
+                    val runEntity = RunEntity(
+                        imageBitmap = mapBitmap,
                         sessionDuration = state.sessionDuration,
                         averageSpeedInKPH = state.averageSpeedInKph,
-                        distanceCovered = state.distanceCoveredInMeters
+                        distanceCoveredInMeters = state.distanceCoveredInMeters
                     )
 
+                    runningSessionViewModel.saveSessionToRoomDatabase(runEntity)
+                    TrackingUtils.sendCommandToService(context, Constants.STOP_SERVICE)
+                    isDialogVisible = false
+                    isLoading = false
+                    navigateToHome()
+
+/* Do not remove
                     runningSessionViewModel.saveSessionToFirebase(run, mapBitmap,
                         onSuccess = {
                             Toast.makeText(
@@ -369,7 +368,7 @@ fun NavGraphBuilder.runNavigation(
                             navigateToHome()
                         }
                     )
-
+*/
                 }
             )
         }
