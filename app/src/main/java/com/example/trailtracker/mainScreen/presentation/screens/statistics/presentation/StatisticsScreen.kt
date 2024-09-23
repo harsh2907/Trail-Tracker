@@ -19,6 +19,6 @@ fun StatisticsScreen() {
         verticalArrangement = Arrangement.Center
     ) {
 
-        Text(text = "Statistics Screen")
+        Text(text = "Statistics Screen (To be implemented soon...)")
     }
 }
