@@ -14,14 +14,10 @@ import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,9 +25,6 @@ class RunningSessionViewModel @Inject constructor(
     private val runSessionRepository: RunSessionRepository,
     private val workManager: WorkManager
 ) : ViewModel() {
-
-    private val _workerId = MutableStateFlow<UUID?>(null)
-    val workerId = _workerId.asStateFlow()
 
     val runSessionState = combine(
         TrackingService.coloredPolylinePoints,
@@ -75,7 +68,7 @@ class RunningSessionViewModel @Inject constructor(
             .setConstraints(constraints)
             .build()
 
-        _workerId.update { uploadWorkRequest.id }
+
         workManager.enqueue(uploadWorkRequest)
     }
 

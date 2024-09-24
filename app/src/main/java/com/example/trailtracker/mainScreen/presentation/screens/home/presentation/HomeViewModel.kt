@@ -4,17 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.example.trailtracker.mainScreen.data.FirebaseRunRepository
-import com.example.trailtracker.mainScreen.domain.models.Run
+import com.example.trailtracker.mainScreen.domain.models.RunItem
 import com.example.trailtracker.mainScreen.domain.repositories.FirebaseUserRepository
 import com.example.trailtracker.mainScreen.domain.usecases.SortRunsUseCase
-import com.example.trailtracker.mainScreen.worker.UploadSessionsToFirebaseWorker
 import com.example.trailtracker.utils.SortType
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -35,22 +33,13 @@ class HomeViewModel @Inject constructor(
 
     val currentUser = firebaseUserRepository.currentUser
 
-    private val _workerId = MutableStateFlow<UUID?>(null)
-
-
-    fun getDetails() {
-        viewModelScope.launch {
-            _workerId.collectLatest { id ->
-                if (id != null) {
-                    workManager.getWorkInfoByIdFlow(id).collectLatest {
-                        firebaseRunRepository.getAllRunsSortedByDate()
-                    }
-                }
-            }
+    fun addRunItem(runItem: RunItem) {
+        _allRunsState.update {
+            it.copy(
+                runSessions = listOf(runItem) + it.runSessions
+            )
         }
     }
-
-
 
 
     init {
@@ -59,10 +48,37 @@ class HomeViewModel @Inject constructor(
 
             _allRunsState.update { it.copy(isLoading = true) }
             sortRunsUseCase(_sortType.value).collectLatest { runs ->
-                _allRunsState.update { it.copy(runSessions = runs, isLoading = false) }
+                _allRunsState.update {
+                    it.copy(
+                        runSessions = runs,
+                        isLoading = false
+                    )
+                }
             }
 
-            getDetails()
+        }
+    }
+
+    fun onRefresh() {
+        viewModelScope.launch {
+            _allRunsState.update { it.copy(isLoading = true) }
+
+            firebaseRunRepository.getAllRunsSortedByDate().collectLatest { result ->
+                result
+                    .onSuccess { runs ->
+                        delay(1000)
+                        _allRunsState.update {
+                            it.copy(
+                                isLoading = false,
+                                error = "",
+                                runSessions = runs.map { run -> run.toRunItem() })
+                        }
+                    }
+                    .onFailure {t->
+                        delay(1000)
+                        _allRunsState.update { it.copy(isLoading = false, error = t.message ?: "An error occurred, please refresh.") }
+                    }
+            }
         }
     }
 
@@ -77,25 +93,26 @@ class HomeViewModel @Inject constructor(
     }
 
     fun deleteRun(
-        run: Run,
+        runItem: RunItem,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
         viewModelScope.launch {
             _allRunsState.update {
                 it.copy(
-                    runSessions = it.runSessions.toMutableList().apply { remove(run) }
+                    runSessions = it.runSessions.toMutableList().apply { remove(runItem) }
                 )
             }
 
-            firebaseRunRepository.deleteRun(run)
+            firebaseRunRepository.deleteRun(runItem.id)
                 .onSuccess {
                     onSuccess()
                 }
                 .onFailure { error ->
                     _allRunsState.update {
                         it.copy(
-                            runSessions = it.runSessions.toMutableList().apply { remove(run) }
+                            runSessions = it.runSessions.toMutableList()
+                                .apply { remove(runItem) }
                         )
                     }
                     onError(error.message ?: "Oops,an unknown error occurred")
@@ -111,8 +128,5 @@ class HomeViewModel @Inject constructor(
             }
     }
 
-    fun setWorkerId(uuid: UUID) {
-        _workerId.update { uuid }
-    }
 
 }

@@ -67,9 +67,9 @@ class FirebaseRunRepository {
         runsCollection.document(run.id).set(run).await()
     }
 
-    suspend fun deleteRun(run: Run): Result<Unit> = runCatching {
-        runsCollection.document(run.id).delete().await()
-        deleteImageFromStorage(run.id)
+    suspend fun deleteRun(runId:String): Result<Unit> = runCatching {
+        runsCollection.document(runId).delete().await()
+        deleteImageFromStorage(runId)
     }
 
     suspend fun deleteAllRuns(): Result<Unit> = runCatching {
