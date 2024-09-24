@@ -6,13 +6,13 @@ import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.example.trailtracker.mainScreen.data.FirebaseRunRepository
 import com.example.trailtracker.mainScreen.domain.models.RunEntity
 import com.example.trailtracker.mainScreen.domain.repositories.RunSessionRepository
 import com.example.trailtracker.mainScreen.services.TrackingService
 import com.example.trailtracker.mainScreen.worker.UploadSessionsToFirebaseWorker
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -60,7 +60,7 @@ class RunningSessionViewModel @Inject constructor(
 
 
     fun saveSessionToRoomDatabase(runEntity: RunEntity) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             runSessionRepository.upsertRun(runEntity)
             enqueueUploadWorker()
         }

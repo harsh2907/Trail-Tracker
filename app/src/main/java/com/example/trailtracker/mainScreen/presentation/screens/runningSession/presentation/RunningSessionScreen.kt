@@ -44,7 +44,6 @@ import com.example.trailtracker.ui.theme.TrailTrackerTheme
 import com.example.trailtracker.ui.theme.UiColors
 import com.example.trailtracker.utils.formatTime
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.RoundCap
 import com.google.maps.android.compose.CameraPositionState
@@ -73,7 +72,7 @@ fun RunningSessionScreen(
     uiSettings: MapUiSettings,
     mapProperties: MapProperties,
     onLoading:()->Unit,
-    onSnapshot: (Bitmap) -> Unit
+    onSnapshot: (Bitmap?) -> Unit
 ) {
 
     Box(modifier = modifier) {
@@ -142,7 +141,7 @@ fun RunningSessionScreen(
                             boundsBuilder.include(pos)
                         }
 
-                        Log.e("CameraBounds", "Bounds: " + boundsBuilder.build().toString());
+                        Log.e("CameraBounds", "Bounds: " + boundsBuilder.build().toString())
 
                         map.moveCamera(
                             CameraUpdateFactory.newLatLngBounds(
@@ -150,19 +149,18 @@ fun RunningSessionScreen(
                                 100
                             )
                         )
+                        map.setOnCameraIdleListener {
+                            createSnapshotJob?.cancel()
+                            createSnapshotJob = coroutineScope.launch {
+                                // Make sure the map is sharp and focused before taking
+                                // the screenshot
+                                delay(500L)
+                                map.awaitSnapshot()?.let(onSnapshot)
+                            }
+                        }
                     }else{
                         Log.e("Bound Builder","Empty poly-points")
-                    }
-
-
-                    map.setOnCameraIdleListener {
-                        createSnapshotJob?.cancel()
-                        createSnapshotJob = coroutineScope.launch {
-                            // Make sure the map is sharp and focused before taking
-                            // the screenshot
-                            delay(500L)
-                            map.awaitSnapshot()?.let(onSnapshot)
-                        }
+                        onSnapshot(null)
                     }
                 }
             }

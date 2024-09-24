@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
-import androidx.work.Data
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.example.trailtracker.mainScreen.data.FirebaseRunRepository
@@ -43,7 +42,7 @@ class UploadSessionsToFirebaseWorker @AssistedInject constructor(
 
         return Result.success(
             workDataOf(
-                KEY_RESULT to UUID.randomUUID()
+                KEY_RESULT to UUID.randomUUID().toString()
             )
         )
     }

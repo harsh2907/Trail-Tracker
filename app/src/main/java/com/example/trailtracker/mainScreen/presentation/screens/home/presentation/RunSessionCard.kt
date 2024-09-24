@@ -33,7 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.trailtracker.mainScreen.domain.models.Run
+import com.example.trailtracker.mainScreen.domain.models.RunItem
 import com.example.trailtracker.ui.theme.UiColors
 import com.example.trailtracker.utils.Constants
 import com.example.trailtracker.utils.formatTime
@@ -43,7 +43,7 @@ import kotlin.math.roundToInt
 @Composable
 fun RunSessionCard(
     modifier: Modifier = Modifier,
-    run: Run,
+    runItem: RunItem,
     onClick: () -> Unit,
     onLongClick: () -> Unit
 ) {
@@ -63,21 +63,20 @@ fun RunSessionCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            if (run.imageUrl != null) {
-                AsyncImage(
-                    model = run.imageUrl,
-                    contentDescription = "map",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
-                        .aspectRatio(16 / 9f)
-                        .clip(ShapeDefaults.Medium)
-                )
-            }
+            AsyncImage(
+                model = runItem.imageBitmap ?: runItem.imageUrl,
+                contentDescription = "map",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .aspectRatio(16 / 9f)
+                    .clip(ShapeDefaults.Medium)
+            )
+
 
             RunningTimeSection(
                 modifier = Modifier.padding(vertical = 8.dp),
-                duration = run.sessionDuration.formatTime()
+                duration = runItem.sessionDuration.formatTime()
             )
 
             HorizontalDivider(
@@ -88,7 +87,7 @@ fun RunSessionCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
-                dateTime = Constants.convertEpochToFormattedDate(run.createdAt)
+                dateTime = Constants.convertEpochToFormattedDate(runItem.createdAt)
             )
 
             Row(
@@ -109,7 +108,7 @@ fun RunSessionCard(
                     )
 
                     Text(
-                        text = "${run.distanceCoveredInMeters.roundToInt()} m",
+                        text = "${runItem.distanceCoveredInMeters.roundToInt()} m",
                         style = MaterialTheme.typography.titleMedium,
                     )
                 }
@@ -126,7 +125,7 @@ fun RunSessionCard(
                     )
 
                     Text(
-                        text = "${run.averageSpeedInKPH.roundToInt()} km/h",
+                        text = "${runItem.averageSpeedInKPH.roundToInt()} km/h",
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
