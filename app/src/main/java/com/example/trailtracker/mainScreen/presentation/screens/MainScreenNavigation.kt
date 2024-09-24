@@ -2,6 +2,7 @@ package com.example.trailtracker.mainScreen.presentation.screens
 
 import android.app.Activity
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -32,7 +33,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,13 +42,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.trailtracker.R
-import com.example.trailtracker.mainScreen.domain.models.Run
 import com.example.trailtracker.mainScreen.domain.models.RunEntity
 import com.example.trailtracker.mainScreen.presentation.Destinations
 import com.example.trailtracker.mainScreen.presentation.screens.home.presentation.HomeScreen
@@ -91,6 +89,12 @@ fun MainScreenNavigation(
             val state by homeViewModel.allRunsState.collectAsStateWithLifecycle()
             val currentUser by homeViewModel.currentUser.collectAsStateWithLifecycle()
 
+            LaunchedEffect(state.error) {
+                if (state.error.isNotEmpty()) {
+                    Toast.makeText(context, state.error, Toast.LENGTH_SHORT).show()
+                }
+            }
+
             if (currentUser == null) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
@@ -101,15 +105,16 @@ fun MainScreenNavigation(
                         state = state,
                         user = user,
                         onSortTypeChanged = homeViewModel::onSortTypeChanged,
+                        onRefresh = homeViewModel::onRefresh,
                         navigateToSession = {
                             navController.navigate(Destinations.Home.Run.route) {
                                 launchSingleTop = true
                                 restoreState = true
                             }
                         },
-                        onDeleteSession = { run ->
+                        onDeleteSession = { runItem ->
                             homeViewModel.deleteRun(
-                                run = run,
+                                runItem = runItem,
                                 onSuccess = {
                                     Toast.makeText(
                                         context,
@@ -279,9 +284,6 @@ fun NavGraphBuilder.runNavigation(
             )
         }
 
-
-        val workerId by runningSessionViewModel.workerId.collectAsStateWithLifecycle()
-
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             floatingActionButton = {
@@ -344,44 +346,24 @@ fun NavGraphBuilder.runNavigation(
                 isDialogVisible = isDialogVisible,
                 onLoading = { isLoading = true },
                 onSnapshot = { mapBitmap ->
-                    val runEntity = RunEntity(
-                        imageBitmap = mapBitmap,
-                        sessionDuration = state.sessionDuration,
-                        averageSpeedInKPH = state.averageSpeedInKph,
-                        distanceCoveredInMeters = state.distanceCoveredInMeters
-                    )
-
-                    runningSessionViewModel.saveSessionToRoomDatabase(runEntity)
-                    workerId?.let { homeViewModel.setWorkerId(it) }
-
+                    if (mapBitmap == null) {
+                        Toast.makeText(context, "No Progress to save", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Log.e("Map", "Got our map bitmap here")
+                        val runEntity = RunEntity(
+                            imageBitmap = mapBitmap,
+                            sessionDuration = state.sessionDuration,
+                            averageSpeedInKPH = state.averageSpeedInKph,
+                            distanceCoveredInMeters = state.distanceCoveredInMeters
+                        )
+                        homeViewModel.addRunItem(runEntity.toRunItem())
+                        runningSessionViewModel.saveSessionToRoomDatabase(runEntity)
+                    }
 
                     TrackingUtils.sendCommandToService(context, Constants.STOP_SERVICE)
                     isDialogVisible = false
                     isLoading = false
                     navigateToHome()
-
-                    /* Do not remove
-                                        runningSessionViewModel.saveSessionToFirebase(run, mapBitmap,
-                                            onSuccess = {
-                                                Toast.makeText(
-                                                    context,
-                                                    "Session saved successfully",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                                TrackingUtils.sendCommandToService(context, Constants.STOP_SERVICE)
-                                                isDialogVisible = false
-                                                isLoading = false
-                                                navigateToHome()
-                                            },
-                                            onError = { error ->
-                                                Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
-                                                TrackingUtils.sendCommandToService(context, Constants.STOP_SERVICE)
-                                                isDialogVisible = false
-                                                isLoading = false
-                                                navigateToHome()
-                                            }
-                                        )
-                    */
                 }
             )
         }

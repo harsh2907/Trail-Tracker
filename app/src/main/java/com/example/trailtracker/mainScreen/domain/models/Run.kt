@@ -10,4 +10,16 @@ data class Run(
     val averageSpeedInKPH: Double = 0.0,
     val distanceCoveredInMeters: Double = 0.0,
     val caloriesBurned: Int = 0
-)
+){
+    fun toRunItem():RunItem{
+        return RunItem(
+            id = this.id,
+            imageUrl = this.imageUrl,
+            createdAt = this.createdAt,
+            sessionDuration = this.sessionDuration,
+            averageSpeedInKPH = this.averageSpeedInKPH,
+            distanceCoveredInMeters = this.distanceCoveredInMeters,
+            caloriesBurned = this.caloriesBurned
+        )
+    }
+}

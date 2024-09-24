@@ -27,4 +27,16 @@ data class RunEntity(
             caloriesBurned = this.caloriesBurned
         )
     }
+
+    fun toRunItem():RunItem{
+        return RunItem(
+            id = this.id,
+            imageBitmap = this.imageBitmap,
+            createdAt = this.createdAt,
+            sessionDuration = this.sessionDuration,
+            averageSpeedInKPH = this.averageSpeedInKPH,
+            distanceCoveredInMeters = this.distanceCoveredInMeters,
+            caloriesBurned = this.caloriesBurned
+        )
+    }
 }
