@@ -19,7 +19,6 @@ import com.example.trailtracker.R
 import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.ColoredPolyline
 import com.example.trailtracker.utils.Constants
 import com.example.trailtracker.utils.TrackingUtils
-import com.example.trailtracker.utils.formatTime
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -320,7 +319,7 @@ class TrackingService : LifecycleService() {
         lifecycleScope.launch {
             sessionDuration.collectLatest { time ->
                 val notification = curNotificationBuilder
-                    .setContentText(time.formatTime())
+                    .setContentText(Constants.formatTime(time))
                 notificationManager.notify(Constants.NOTIFICATION_ID, notification.build())
             }
         }

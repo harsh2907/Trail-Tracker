@@ -18,7 +18,7 @@ class ProfileViewModel @Inject constructor(
 
     val currentUser = firebaseUserRepository.currentUser
 
-    fun getTotalTimeSpend() = firebaseRunRepository.getTotalDurationForSessions()
+    fun getTotalTimeSpend() = firebaseRunRepository.getTotalDurationForSessionsInSeconds()
     fun getAverageSpeed() = firebaseRunRepository.getTotalAverageSpeedForSessions()
     fun getTotalDistance() = firebaseRunRepository.getTotalDistanceCoveredForSessions()
     fun getTotalCalories() = firebaseRunRepository.getTotalCaloriesBurnedForSessions()

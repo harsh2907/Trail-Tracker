@@ -42,7 +42,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.trailtracker.ui.theme.TrailTrackerTheme
 import com.example.trailtracker.ui.theme.UiColors
-import com.example.trailtracker.utils.formatTime
+import com.example.trailtracker.utils.Constants
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.RoundCap
@@ -208,7 +208,7 @@ fun SessionDetailsCard(
     state: RunSessionState
 ) {
     val sessionDuration = remember(state.sessionDuration) {
-        state.sessionDuration.formatTime()
+        Constants.formatTime(state.sessionDuration)
     }
 
     ElevatedCard(

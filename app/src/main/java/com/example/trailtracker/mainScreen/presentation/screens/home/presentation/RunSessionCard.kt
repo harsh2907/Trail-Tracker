@@ -36,7 +36,6 @@ import coil.compose.AsyncImage
 import com.example.trailtracker.mainScreen.domain.models.RunItem
 import com.example.trailtracker.ui.theme.UiColors
 import com.example.trailtracker.utils.Constants
-import com.example.trailtracker.utils.formatTime
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -76,7 +75,7 @@ fun RunSessionCard(
 
             RunningTimeSection(
                 modifier = Modifier.padding(vertical = 8.dp),
-                duration = runItem.sessionDuration.formatTime()
+                duration = Constants.formatTime(runItem.sessionDuration)
             )
 
             HorizontalDivider(

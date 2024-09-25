@@ -34,6 +34,7 @@ import coil.request.ImageRequest
 import com.example.trailtracker.R
 import com.example.trailtracker.mainScreen.domain.models.User
 import com.example.trailtracker.ui.theme.UiColors
+import com.example.trailtracker.utils.Constants
 import java.util.Locale
 
 @Composable
@@ -163,7 +164,7 @@ private fun ProfileStatsCard(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(text = "Total Time Spend")
-                    Text(text = "$totalTime min")
+                    Text(text = "${Constants.formatTime(totalTime)} min")
                 }
             }
         }

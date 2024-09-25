@@ -39,10 +39,22 @@ object Constants{
         }
     }
 
+    fun formatTime(seconds: Long): String {
+        val hours = seconds / 3600
+        val minutes = (seconds % 3600) / 60
+        val remainingSeconds = seconds % 60
+
+        return when {
+            hours > 0 -> String.format("%d:%02d:%02d", hours, minutes, remainingSeconds)
+            else -> String.format("%d:%02d", minutes, remainingSeconds)
+        }
+    }
+
 }
 
 
 
+/*
 fun Long.formatTime(): String {
     val hours = this / 3600
     val minutes = (this % 3600) / 60
@@ -53,4 +65,4 @@ fun Long.formatTime(): String {
         format = "%02d:%02d:%02d",
         hours, minutes, remainingSeconds
     )
-}
+}*/

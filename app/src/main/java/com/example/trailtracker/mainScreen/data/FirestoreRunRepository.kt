@@ -108,7 +108,7 @@ class FirebaseRunRepository {
         return getRunsSortedBy("caloriesBurned")
     }
 
-    fun getTotalDurationForSessions(): Flow<Long> {
+    fun getTotalDurationForSessionsInSeconds(): Flow<Long> {
         return runsFlow.map {run-> run.sumOf { it.sessionDuration } }
     }
 
@@ -125,8 +125,10 @@ class FirebaseRunRepository {
     fun getTotalAverageSpeedForSessions(): Flow<Double> {
         return runsFlow.map { runs ->
             val totalDistance = runs.sumOf { it.distanceCoveredInMeters }
-            val totalTime = runs.sumOf { it.sessionDuration }
-            if (totalTime > 0) (totalDistance / totalTime) * 3600 else 0.0
+            val totalTimeInSeconds = runs.sumOf { it.sessionDuration }.toDouble()
+            val avgSpeedInMps = if (totalTimeInSeconds > 0) (totalDistance / totalTimeInSeconds) else 0.0
+
+            avgSpeedInMps * (18f/5f)
         }
     }
 
