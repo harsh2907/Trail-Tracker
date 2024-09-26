@@ -147,4 +147,7 @@ dependencies {
     //Work Manager
     implementation(libs.androidx.work.runtime.ktx)
 
+    //Charts
+    implementation(libs.ycharts)
+
 }
