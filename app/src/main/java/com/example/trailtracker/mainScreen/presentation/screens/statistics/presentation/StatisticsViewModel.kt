@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
-@OptIn(ExperimentalCoroutinesApi::class)
 class StatisticsViewModel @Inject constructor(
     private val sortRunsUseCase: SortRunsUseCase
 ) : ViewModel() {

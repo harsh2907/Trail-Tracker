@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
@@ -25,10 +26,9 @@ import java.util.Arrays.fill
 
 @Composable
 fun DemoChart(modelProducer: CartesianChartModelProducer, modifier: Modifier) {
-  val marker = rememberDefaultCartesianMarker(label = TextComponent())
+  val marker = rememberDefaultCartesianMarker(label = TextComponent(color = Color.White.toArgb()))
   CartesianChartHost(
-    chart =
-    rememberCartesianChart(
+    chart = rememberCartesianChart(
       rememberLineCartesianLayer(
         LineCartesianLayer.LineProvider.series(
           LineCartesianLayer.rememberLine(
