@@ -16,7 +16,7 @@ class SortRunsUseCase(
             SortType.DATE -> allRuns.map { run -> run.sortedByDescending { it.createdAt } }
             SortType.SPEED -> allRuns.map { run -> run.sortedByDescending { it.averageSpeedInKPH } }
             SortType.DISTANCE -> allRuns.map { run -> run.sortedByDescending { it.distanceCoveredInMeters } }
-            SortType.DURATION -> allRuns.map { run -> run.sortedByDescending { it.sessionDuration } }
+            SortType.DURATION -> allRuns.map { run -> run.sortedByDescending { it.sessionDurationInSeconds } }
             SortType.CALORIES -> allRuns.map { run -> run.sortedByDescending { it.caloriesBurned } }
         }
     }

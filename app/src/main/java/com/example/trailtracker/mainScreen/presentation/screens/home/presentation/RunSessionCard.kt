@@ -75,7 +75,7 @@ fun RunSessionCard(
 
             RunningTimeSection(
                 modifier = Modifier.padding(vertical = 8.dp),
-                duration = Constants.formatTime(runItem.sessionDuration)
+                duration = Constants.formatTime(runItem.sessionDurationInSeconds)
             )
 
             HorizontalDivider(

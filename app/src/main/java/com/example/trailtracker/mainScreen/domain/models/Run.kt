@@ -16,7 +16,7 @@ data class Run(
             id = this.id,
             imageUrl = this.imageUrl,
             createdAt = this.createdAt,
-            sessionDuration = this.sessionDuration,
+            sessionDurationInSeconds = this.sessionDuration,
             averageSpeedInKPH = this.averageSpeedInKPH,
             distanceCoveredInMeters = this.distanceCoveredInMeters,
             caloriesBurned = this.caloriesBurned

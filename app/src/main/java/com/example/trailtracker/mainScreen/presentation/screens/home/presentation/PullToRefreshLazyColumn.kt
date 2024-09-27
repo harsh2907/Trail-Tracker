@@ -10,7 +10,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,14 +29,28 @@ fun PullToRefreshLazyColumn(
     modifier: Modifier = Modifier,
     isRefreshing: Boolean,
     indicatorColor: Color = Color.White,
-    onRefresh: suspend () -> Unit, // Make onRefresh a suspend function
+    onRefresh:  () -> Unit, // Make onRefresh a suspend function
     lazyListState: LazyListState = rememberLazyListState(),
     content: LazyListScope.() -> Unit,
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
     val currentOnRefresh by rememberUpdatedState(onRefresh)
 
-    Box(
+    PullToRefreshBox(isRefreshing = isRefreshing, onRefresh = onRefresh) {
+        if (isRefreshing) {
+            CircularProgressIndicator()
+        } else {
+            LazyColumn(
+                state = lazyListState,
+                contentPadding = PaddingValues(8.dp),
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                content = content
+            )
+        }
+    }
+
+/*    Box(
         modifier = modifier
             .fillMaxSize()
             .nestedScroll(pullToRefreshState.nestedScrollConnection),
@@ -75,5 +89,5 @@ fun PullToRefreshLazyColumn(
             modifier = Modifier.align(Alignment.TopCenter),
             containerColor = indicatorColor
         )
-    }
+    }*/
 }

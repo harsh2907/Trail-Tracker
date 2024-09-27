@@ -33,7 +33,7 @@ googleServices = "4.4.2"
 firebaseFirestore = "25.1.0"
 firebaseStorage = "21.0.0"
 workRuntimeKtx = "2.9.1"
-ycharts = "2.1.0"
+vico = "2.0.0-beta.1"
 
 
 [libraries]
@@ -88,7 +88,8 @@ androidx-credentials-play-services-auth = { group = "androidx.credentials",name 
 
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebaseStorage" }
-ycharts = { module = "co.yml:ycharts", version.ref = "ycharts" }
+vico-compose = { group = "com.patrykandpatrick.vico", name = "compose", version.ref = "vico" }
+
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

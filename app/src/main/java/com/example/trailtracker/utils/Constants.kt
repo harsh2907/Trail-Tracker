@@ -2,6 +2,7 @@ package com.example.trailtracker.utils
 
 import java.util.Locale
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -49,6 +50,12 @@ object Constants{
             else -> String.format("%d:%02d", minutes, remainingSeconds)
         }
     }
+
+    fun formatEpochToDateString(epochMillis: Long, format: String = "MM/dd/yyyy"): String {
+        val dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMillis), ZoneId.systemDefault())
+        return dateTime.format(DateTimeFormatter.ofPattern(format))
+    }
+
 
 }
 

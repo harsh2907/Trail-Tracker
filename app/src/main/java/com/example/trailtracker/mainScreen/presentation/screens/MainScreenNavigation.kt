@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -28,6 +29,7 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,16 +58,21 @@ import com.example.trailtracker.mainScreen.presentation.screens.profile.presenta
 import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.EndSessionDialog
 import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.RunningSessionScreen
 import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.RunningSessionViewModel
+import com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation.DemoChart
 import com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation.StatisticsScreen
+import com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation.StatisticsViewModel
 import com.example.trailtracker.navigation.Screens
+import com.example.trailtracker.ui.theme.UiColors
 import com.example.trailtracker.utils.Constants
 import com.example.trailtracker.utils.MapStyle
+import com.example.trailtracker.utils.SortType
 import com.example.trailtracker.utils.TrackingUtils
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 
 @Composable
 fun MainScreenNavigation(
@@ -141,7 +148,31 @@ fun MainScreenNavigation(
         }
 
         composable(route = Destinations.Statistics.route) {
-            StatisticsScreen()
+            val statisticsViewModel: StatisticsViewModel = hiltViewModel()
+
+            // Launch effect to set the initial sort type
+            LaunchedEffect(Unit) {
+                statisticsViewModel.updateSortType(sortType = SortType.DURATION)
+            }
+
+/*            // Collect overall points for the graph
+            val overAllPoints by statisticsViewModel.overallPointsForGraph.collectAsStateWithLifecycle()
+
+            if (overAllPoints.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(text = "Stats Screen")
+                }
+            } else {
+
+
+                // Render the StatisticsScreen with updated line chart data
+                StatisticsScreen(
+
+                )
+            }*/
+            val modelProducer = remember { CartesianChartModelProducer() }
+
+            DemoChart(modelProducer = modelProducer, modifier = Modifier.fillMaxSize())
         }
 
         composable(route = Destinations.Profile.route) {
