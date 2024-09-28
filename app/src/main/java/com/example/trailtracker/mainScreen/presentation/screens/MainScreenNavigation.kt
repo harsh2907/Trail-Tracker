@@ -32,6 +32,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -72,7 +73,13 @@ import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.compose.chart.line.lineChart
+import com.patrykandpatrick.vico.compose.chart.line.lineSpec
+import com.patrykandpatrick.vico.core.chart.line.LineChart
+import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
+import com.patrykandpatrick.vico.core.entry.entryOf
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun MainScreenNavigation(
@@ -155,7 +162,7 @@ fun MainScreenNavigation(
                 statisticsViewModel.updateSortType(sortType = SortType.DURATION)
             }
 
-/*            // Collect overall points for the graph
+            // Collect overall points for the graph
             val overAllPoints by statisticsViewModel.overallPointsForGraph.collectAsStateWithLifecycle()
 
             if (overAllPoints.isEmpty()) {
@@ -163,16 +170,29 @@ fun MainScreenNavigation(
                     Text(text = "Stats Screen")
                 }
             } else {
+                val points = remember {
+                    overAllPoints.map { entryOf(it.x,it.y) }
+                }
 
+                val modelProducer = remember { ChartEntryModelProducer() }
+
+                LaunchedEffect(points) {
+                    modelProducer.setEntries(points)
+                }
+
+                val lineChart = lineChart(
+                    lines = remember { listOf(lineSpec(lineColor = Color.Gray, lineThickness = 3.dp,)) }
+                )
 
                 // Render the StatisticsScreen with updated line chart data
-                StatisticsScreen(
-
+                DemoChart(
+                    modifier = Modifier.fillMaxSize(),
+                    modelProducer = modelProducer,
+                    chart = lineChart
                 )
-            }*/
-            val modelProducer = remember { CartesianChartModelProducer() }
+            }
 
-            DemoChart(modelProducer = modelProducer, modifier = Modifier.fillMaxSize())
+
         }
 
         composable(route = Destinations.Profile.route) {

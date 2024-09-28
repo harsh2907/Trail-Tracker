@@ -147,6 +147,6 @@ dependencies {
     //Work Manager
     implementation(libs.androidx.work.runtime.ktx)
 
-    implementation(libs.vico.compose)
+    implementation(libs.bundles.vico.charts)
 
 }

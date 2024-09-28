@@ -3,7 +3,9 @@ package com.example.trailtracker.mainScreen.presentation.screens.statistics.pres
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.trailtracker.mainScreen.domain.models.RunItem
+import com.example.trailtracker.mainScreen.domain.repositories.FirebaseUserRepository
 import com.example.trailtracker.mainScreen.domain.usecases.SortRunsUseCase
+import com.example.trailtracker.mainScreen.presentation.screens.statistics.utils.DataPoint
 import com.example.trailtracker.utils.Constants
 import com.example.trailtracker.utils.SortType
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,15 +19,19 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
+@OptIn(ExperimentalCoroutinesApi::class)
 class StatisticsViewModel @Inject constructor(
+    private val firebaseUserRepository: FirebaseUserRepository,
     private val sortRunsUseCase: SortRunsUseCase
 ) : ViewModel() {
+
+    val currentUser = firebaseUserRepository.currentUser
 
     // Sort type that can be updated via the UI
     private val _sortType = MutableStateFlow(SortType.DURATION)
 
-/*    // Flow for the overall graph
-    val overallPointsForGraph: StateFlow<List<Point>> = _sortType
+    // Flow for the overall graph
+    val overallPointsForGraph: StateFlow<List<DataPoint>> = _sortType
         .flatMapLatest { sortType ->
             sortRunsUseCase(sortType).map { runs ->
                 runs.map { run ->
@@ -35,19 +41,17 @@ class StatisticsViewModel @Inject constructor(
 //                    Point(x = run.createdAt.toFloat(), y = yValue)
 // Assuming `minCreatedAt` is the earliest createdAt value (epoch) in your data
                     val minCreatedAt = runs.minOfOrNull { it.createdAt } ?: System.currentTimeMillis()
-
-                    val xValue = ((run.createdAt - minCreatedAt) / (1000 * 60 * 60 * 24)).toFloat()  // Days since `minCreatedAt`
+                    val addedAt = firebaseUserRepository.currentUser.value?.joinedAt ?: System.currentTimeMillis()
+                    val xValue = ((run.createdAt - addedAt) / (1000 * 60 * 60 * 24)).toFloat()  // Days since `minCreatedAt`
                     val yValue = mapRunMetricToYValue(sortType, run)
-                    Point(x = xValue, y = yValue)
-
-
+                    DataPoint(x = xValue, y = yValue)
                 }
             }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Flow for the weekly graph (filtering runs from the past 7 days)
-    val weeklyPointsForGraph: StateFlow<List<Point>> = _sortType
+    val weeklyPointsForGraph: StateFlow<List<DataPoint>> = _sortType
         .flatMapLatest { sortType ->
             sortRunsUseCase(sortType).map { runs ->
                 // Filter for runs in the past 7 days
@@ -58,11 +62,11 @@ class StatisticsViewModel @Inject constructor(
                     .map { run ->
                         val formattedDate = Constants.formatEpochToDateString(run.createdAt)
                         val yValue = mapRunMetricToYValue(sortType, run)
-                        Point(x = run.createdAt.toFloat(), y = yValue)
+                        DataPoint(x = run.createdAt.toFloat(), y = yValue)
                     }
             }
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())*/
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Helper function to map the selected metric to y-axis value
     private fun mapRunMetricToYValue(sortType: SortType, run: RunItem): Float {
