@@ -71,7 +71,10 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
+import com.patrykandpatrick.vico.core.common.data.ExtraStore
+import java.time.LocalDate
 
 @Composable
 fun MainScreenNavigation(
@@ -165,25 +168,15 @@ fun MainScreenNavigation(
                     Text(text = "Stats Screen")
                 }
             } else {
-                val xPoints = remember { overAllPoints.map { it.x } }
-                val yPoints = remember { overAllPoints.map { it.y } }
 
-                val modelProducer = remember { CartesianChartModelProducer() }
 
-                LaunchedEffect(xPoints, yPoints) {
-                    modelProducer.runTransaction {
-                        lineSeries {
-                            series(x = xPoints, y = yPoints)
-                        }
-                    }
-                }
 
                 // Render the StatisticsScreen with updated line chart data
                 DemoChart(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color.White),
-                    modelProducer = modelProducer,
+                    overAllPoints = overAllPoints
                 )
             }
 

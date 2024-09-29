@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import java.time.LocalDate
 import javax.inject.Inject
 import kotlin.math.min
 
@@ -32,24 +33,23 @@ class StatisticsViewModel @Inject constructor(
     private val _sortType = MutableStateFlow(SortType.DURATION)
 
     // Flow for the overall graph
-    val overallPointsForGraph: StateFlow<List<DataPoint>> = _sortType
+    val overallPointsForGraph: StateFlow<Map<LocalDate,Float>> = _sortType
         .flatMapLatest { sortType ->
             sortRunsUseCase(sortType).map { runs ->
-                runs.map { run ->
+                runs.associate { run ->
                     // Mapping each RunItem to a Point for the overall graph
-//                    val formattedDate = Constants.formatEpochToDateString(run.createdAt)
 //                    val yValue = mapRunMetricToYValue(sortType, run)
 //                    Point(x = run.createdAt.toFloat(), y = yValue)
 // Assuming `minCreatedAt` is the earliest createdAt value (epoch) in your data
-                    val minCreatedAt = runs.minOfOrNull { it.createdAt } ?: System.currentTimeMillis()
-                    val addedAt = firebaseUserRepository.currentUser.value?.joinedAt ?: System.currentTimeMillis()
-                    val xValue = ((run.createdAt - minCreatedAt) / (1000 * 60 * 60 * 24)).toFloat()  // Days since `minCreatedAt`
+                    val formattedDate =
+                        Constants.formatEpochToDateString(run.createdAt).let { LocalDate.parse(it) }
                     val yValue = mapRunMetricToYValue(sortType, run)
-                    DataPoint(x = xValue, y = yValue)
+
+                    formattedDate to yValue
                 }
             }
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     // Flow for the weekly graph (filtering runs from the past 7 days)
     val weeklyPointsForGraph: StateFlow<List<DataPoint>> = _sortType
