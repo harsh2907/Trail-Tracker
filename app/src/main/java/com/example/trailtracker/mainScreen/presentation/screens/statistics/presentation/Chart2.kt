@@ -1,30 +1,38 @@
 package com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
-import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
-import com.patrykandpatrick.vico.compose.chart.Chart
-import com.patrykandpatrick.vico.core.axis.AxisRenderer
-import com.patrykandpatrick.vico.core.chart.line.LineChart
-import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
-import com.patrykandpatrick.vico.core.legend.LegendItem
+import androidx.compose.ui.graphics.toArgb
+import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.marker.rememberDefaultCartesianMarker
+import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.compose.cartesian.rememberVicoZoomState
+import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
+import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.common.component.TextComponent
 
 @Composable
 fun DemoChart(
     modifier: Modifier = Modifier,
-    modelProducer: ChartEntryModelProducer,
-    chart: LineChart
+    modelProducer: CartesianChartModelProducer
 ) {
-
-    Chart(
-        modifier = modifier.background(Color.White),
-        chart = chart,
-        chartModelProducer = modelProducer,
-        startAxis = rememberStartAxis(),
-        bottomAxis = rememberBottomAxis(),
+    CartesianChartHost(
+        rememberCartesianChart(
+            rememberLineCartesianLayer(),
+            startAxis = VerticalAxis.rememberStart(),
+            bottomAxis = HorizontalAxis.rememberBottom(),
+            marker = rememberDefaultCartesianMarker(label = TextComponent(color = Color.Black.toArgb()))
+        ),
+        modelProducer = modelProducer,
+        zoomState = rememberVicoZoomState(zoomEnabled = true),
+        modifier = modifier
     )
 
 }

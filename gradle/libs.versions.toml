@@ -33,7 +33,7 @@ googleServices = "4.4.2"
 firebaseFirestore = "25.1.0"
 firebaseStorage = "21.0.0"
 workRuntimeKtx = "2.9.1"
-vico = "1.15.0"
+vico = "2.0.0-beta.1"
 
 
 [libraries]

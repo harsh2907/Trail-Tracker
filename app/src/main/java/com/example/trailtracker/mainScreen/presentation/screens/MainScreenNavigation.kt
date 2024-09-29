@@ -13,11 +13,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -32,7 +32,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,10 +59,8 @@ import com.example.trailtracker.mainScreen.presentation.screens.runningSession.p
 import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.RunningSessionScreen
 import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.RunningSessionViewModel
 import com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation.DemoChart
-import com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation.StatisticsScreen
 import com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation.StatisticsViewModel
 import com.example.trailtracker.navigation.Screens
-import com.example.trailtracker.ui.theme.UiColors
 import com.example.trailtracker.utils.Constants
 import com.example.trailtracker.utils.MapStyle
 import com.example.trailtracker.utils.SortType
@@ -73,13 +70,8 @@ import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.patrykandpatrick.vico.compose.chart.line.lineChart
-import com.patrykandpatrick.vico.compose.chart.line.lineSpec
-import com.patrykandpatrick.vico.core.chart.line.LineChart
-import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
-import com.patrykandpatrick.vico.core.entry.entryOf
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 
 @Composable
 fun MainScreenNavigation(
@@ -166,29 +158,32 @@ fun MainScreenNavigation(
             val overAllPoints by statisticsViewModel.overallPointsForGraph.collectAsStateWithLifecycle()
 
             if (overAllPoints.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(text = "Stats Screen")
                 }
             } else {
-                val points = remember {
-                    overAllPoints.map { entryOf(it.x,it.y) }
+                val xPoints = remember { overAllPoints.map { it.x } }
+                val yPoints = remember { overAllPoints.map { it.y } }
+
+                val modelProducer = remember { CartesianChartModelProducer() }
+
+                LaunchedEffect(xPoints, yPoints) {
+                    modelProducer.runTransaction {
+                        lineSeries {
+                            series(x = xPoints, y = yPoints)
+                        }
+                    }
                 }
-
-                val modelProducer = remember { ChartEntryModelProducer() }
-
-                LaunchedEffect(points) {
-                    modelProducer.setEntries(points)
-                }
-
-                val lineChart = lineChart(
-                    lines = remember { listOf(lineSpec(lineColor = Color.Gray, lineThickness = 3.dp,)) }
-                )
 
                 // Render the StatisticsScreen with updated line chart data
                 DemoChart(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.White),
                     modelProducer = modelProducer,
-                    chart = lineChart
                 )
             }
 

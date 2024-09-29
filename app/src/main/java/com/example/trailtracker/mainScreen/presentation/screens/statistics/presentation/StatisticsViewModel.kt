@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
+import kotlin.math.min
 
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -42,7 +43,7 @@ class StatisticsViewModel @Inject constructor(
 // Assuming `minCreatedAt` is the earliest createdAt value (epoch) in your data
                     val minCreatedAt = runs.minOfOrNull { it.createdAt } ?: System.currentTimeMillis()
                     val addedAt = firebaseUserRepository.currentUser.value?.joinedAt ?: System.currentTimeMillis()
-                    val xValue = ((run.createdAt - addedAt) / (1000 * 60 * 60 * 24)).toFloat()  // Days since `minCreatedAt`
+                    val xValue = ((run.createdAt - minCreatedAt) / (1000 * 60 * 60 * 24)).toFloat()  // Days since `minCreatedAt`
                     val yValue = mapRunMetricToYValue(sortType, run)
                     DataPoint(x = xValue, y = yValue)
                 }
