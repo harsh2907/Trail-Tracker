@@ -64,8 +64,6 @@ class MainActivity : ComponentActivity() {
                         handleIntent(intent)
                     }
 
-
-
                     TrailTrackerNavigation(
                         navController = navController,
                         startDestination = startDestination
