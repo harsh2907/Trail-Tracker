@@ -1,6 +1,6 @@
 package com.example.trailtracker.utils
 
-import java.util.Locale
+
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -9,7 +9,6 @@ import java.time.format.DateTimeFormatter
 
 object Constants{
 
-    val CLIENT_ID: String = ""
     const val START_OR_RESUME_SERVICE = "START_OR_RESUME_SERVICE"
     const val PAUSE_SERVICE = "PAUSE_SERVICE"
     const val STOP_SERVICE = "STOP_SERVICE"
@@ -59,17 +58,3 @@ object Constants{
 
 }
 
-
-
-/*
-fun Long.formatTime(): String {
-    val hours = this / 3600
-    val minutes = (this % 3600) / 60
-    val remainingSeconds = this % 60
-
-    return String.format(
-        locale = Locale.getDefault(),
-        format = "%02d:%02d:%02d",
-        hours, minutes, remainingSeconds
-    )
-}*/
