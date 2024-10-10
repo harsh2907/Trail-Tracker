@@ -1,6 +1,5 @@
 package com.example.trailtracker.utils
 
-
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -54,7 +53,6 @@ object Constants{
         val dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMillis), ZoneId.systemDefault())
         return dateTime.format(DateTimeFormatter.ofPattern(format))
     }
-
 
 }
 
