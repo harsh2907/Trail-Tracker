@@ -1,5 +1,6 @@
 package com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.trailtracker.mainScreen.domain.models.RunItem
@@ -16,9 +17,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
-import kotlin.math.min
 
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -33,23 +35,32 @@ class StatisticsViewModel @Inject constructor(
     private val _sortType = MutableStateFlow(SortType.DURATION)
 
     // Flow for the overall graph
-    val overallPointsForGraph: StateFlow<Map<LocalDate,Float>> = _sortType
+    val overallPointsForGraph: StateFlow<Map<LocalDate, Float>> = _sortType
         .flatMapLatest { sortType ->
             sortRunsUseCase(sortType).map { runs ->
-                runs.associate { run ->
-                    // Mapping each RunItem to a Point for the overall graph
+                try {
+                    runs.associate { run ->
+                        // Mapping each RunItem to a Point for the overall graph
 //                    val yValue = mapRunMetricToYValue(sortType, run)
 //                    Point(x = run.createdAt.toFloat(), y = yValue)
 // Assuming `minCreatedAt` is the earliest createdAt value (epoch) in your data
-                    val formattedDate =
-                        Constants.formatEpochToDateString(run.createdAt).let { LocalDate.parse(it) }
-                    val yValue = mapRunMetricToYValue(sortType, run)
+                        val dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
 
-                    formattedDate to yValue
+                        val formattedDate = Constants.formatEpochToDateString(run.createdAt).let {
+                            LocalDate.parse(it, dateFormatter)
+                        }
+                        val yValue = mapRunMetricToYValue(sortType, run)
+
+                        formattedDate to yValue
+                    }
+                } catch (e: Exception) {
+                    Log.e("StatsVM", e.message, e)
+                    emptyMap()
                 }
             }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+
 
     // Flow for the weekly graph (filtering runs from the past 7 days)
     val weeklyPointsForGraph: StateFlow<List<DataPoint>> = _sortType
@@ -83,6 +94,6 @@ class StatisticsViewModel @Inject constructor(
 
     // Function to update the sort type from UI
     fun updateSortType(sortType: SortType) {
-        _sortType.value = sortType
+        _sortType.update { sortType }
     }
 }
