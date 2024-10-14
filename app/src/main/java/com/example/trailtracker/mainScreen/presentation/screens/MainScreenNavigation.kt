@@ -61,8 +61,10 @@ import com.example.trailtracker.mainScreen.presentation.screens.profile.presenta
 import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.EndSessionDialog
 import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.RunningSessionScreen
 import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.RunningSessionViewModel
-import com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation.StatisticsChart
+import com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation.GraphSelectionMenu
+import com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation.RenderGraph
 import com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation.StatisticsViewModel
+import com.example.trailtracker.mainScreen.presentation.screens.statistics.utils.GraphType
 import com.example.trailtracker.navigation.Screens
 import com.example.trailtracker.utils.Constants
 import com.example.trailtracker.utils.MapStyle
@@ -156,42 +158,53 @@ fun MainScreenNavigation(
                 statisticsViewModel.updateSortType(sortType = SortType.DURATION)
             }
 
-            // Collect overall points for the graph
+            // Collect state
+            val selectedGraphType by statisticsViewModel.selectedGraphType.collectAsStateWithLifecycle()
             val overAllPoints by statisticsViewModel.overallPointsForGraph.collectAsStateWithLifecycle()
             val weeklyData by statisticsViewModel.weeklyPointsForGraph.collectAsStateWithLifecycle()
+            val todayData by statisticsViewModel.todayPointsForGraph.collectAsStateWithLifecycle()
 
-            if (overAllPoints.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "Stats Screen")
-                }
-            } else {
-
-                // Render the StatisticsScreen with updated line chart data
-                Scaffold(
-                    topBar = {
-                        TopAppBar(
-                            title = {
-                                Text("Last Seven Days")
-                            }
-                        )
-                    }
-                ) { paddingValues ->
-                    StatisticsChart(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues)
-                            .background(Color.White)
-                            .padding(12.dp),
-                        overAllPoints = overAllPoints,
-                        weeklyData = weeklyData
-                    )
+            val topAppBarTitle = remember(selectedGraphType) {
+                when (selectedGraphType) {
+                    GraphType.DAILY -> "Today's Sessions"
+                    GraphType.WEEKLY -> "Last Seven Days Sessions"
+                    GraphType.OVERALL -> "Overall Sessions"
                 }
             }
 
+            var isGraphSelectionVisible by remember { mutableStateOf(false) }
 
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text(topAppBarTitle) },
+                        actions = {
+                            GraphSelectionMenu(
+                                isGraphSelectionVisible = isGraphSelectionVisible,
+                                onDismissRequest = { isGraphSelectionVisible = false },
+                                onGraphTypeSelected = { type ->
+                                    isGraphSelectionVisible = false
+                                    statisticsViewModel.onGraphTypeChanges(type)
+                                },
+                                onIconClick = { isGraphSelectionVisible = true }
+                            )
+                        }
+                    )
+                }
+            ) { paddingValues ->
+                RenderGraph(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .background(Color.White)
+                        .padding(12.dp),
+                    selectedGraphType = selectedGraphType,
+                    todayData = todayData,
+                    weeklyData = weeklyData,
+                    overallData = overAllPoints,
+                    paddingValues = paddingValues
+                )
+            }
         }
 
         composable(route = Destinations.Profile.route) {

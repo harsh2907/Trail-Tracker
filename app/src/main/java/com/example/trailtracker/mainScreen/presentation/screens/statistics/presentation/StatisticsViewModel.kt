@@ -4,8 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.trailtracker.mainScreen.domain.models.RunItem
-import com.example.trailtracker.mainScreen.domain.repositories.FirebaseUserRepository
 import com.example.trailtracker.mainScreen.domain.usecases.SortRunsUseCase
+import com.example.trailtracker.mainScreen.presentation.screens.statistics.utils.GraphType
 import com.example.trailtracker.utils.Constants
 import com.example.trailtracker.utils.SortType
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,6 +13,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -25,14 +26,19 @@ import javax.inject.Inject
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
 class StatisticsViewModel @Inject constructor(
-    private val firebaseUserRepository: FirebaseUserRepository,
     private val sortRunsUseCase: SortRunsUseCase
 ) : ViewModel() {
 
-    val currentUser = firebaseUserRepository.currentUser
 
     // Sort type that can be updated via the UI
     private val _sortType = MutableStateFlow(SortType.DURATION)
+
+    private val _selectedGraphType = MutableStateFlow(GraphType.DAILY)
+    val selectedGraphType = _selectedGraphType.asStateFlow()
+
+    fun onGraphTypeChanges(graphType: GraphType) {
+        _selectedGraphType.update { graphType }
+    }
 
     // Flow for the overall graph
     val overallPointsForGraph: StateFlow<Map<LocalDate, Float>> = _sortType
@@ -87,7 +93,7 @@ class StatisticsViewModel @Inject constructor(
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
-    val todayPointsForGraph: StateFlow<Map<LocalDate, Float>> = _sortType
+    val todayPointsForGraph: StateFlow<Map<Long, Float>> = _sortType
         .flatMapLatest { sortType ->
             sortRunsUseCase(sortType).map { runs ->
                 try {
@@ -107,16 +113,16 @@ class StatisticsViewModel @Inject constructor(
                     runs.filter { run ->
                         run.createdAt in todayStart until todayEnd
                     }.associate { run ->
-                        val dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
+//                        val dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
 
-                        val formattedDate =
-                            Constants.formatEpochToDateString(run.createdAt).let {
-                                LocalDate.parse(it, dateFormatter)
-                            }
+//                        val formattedDate =
+//                            Constants.formatEpochToDateString(run.createdAt).let {
+//                                LocalDate.parse(it, dateFormatter)
+//                            }
 
                         val yValue = mapRunMetricToYValue(sortType, run)
 
-                        formattedDate to yValue
+                        run.createdAt to yValue
                     }
                 } catch (e: Exception) {
                     Log.e("StatsVM", e.message, e)
