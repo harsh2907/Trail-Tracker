@@ -11,6 +11,7 @@ import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
 import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
 import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
@@ -23,25 +24,27 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun DemoChart(
+fun StatisticsChart(
     modifier: Modifier = Modifier,
-    overAllPoints: Map<LocalDate, Float>
+    overAllPoints: Map<LocalDate, Float>,
+    weeklyData: Map<LocalDate, Float>
 ) {
     val dateTimeFormatter = DateTimeFormatter.ofPattern("d MMM")
     val xToDateMapKey = ExtraStore.Key<Map<Double, LocalDate>>()
     val modelProducer = remember { CartesianChartModelProducer() }
-    val xToDates = remember { overAllPoints.keys.associateBy { it.toEpochDay().toDouble() } }
+    val xToDates = remember { weeklyData.keys.associateBy { it.toEpochDay().toDouble() } }
 
-    LaunchedEffect(overAllPoints) {
+    LaunchedEffect(weeklyData) {
         modelProducer.runTransaction {
-            columnSeries { series(xToDates.keys, overAllPoints.values) }
+            columnSeries { series(xToDates.keys, weeklyData.values) }
             extras { it[xToDateMapKey] = xToDates }
         }
     }
 
     val labelValueFormatter = remember {
         CartesianValueFormatter { context, x: Double, _ ->
-            val date = context.model.extraStore[xToDateMapKey][x] ?: LocalDate.ofEpochDay(x.toLong())
+            val date =
+                context.model.extraStore[xToDateMapKey][x] ?: LocalDate.ofEpochDay(x.toLong())
             date.format(dateTimeFormatter)
         }
     }
@@ -55,14 +58,16 @@ fun DemoChart(
                         color = UiColors.secondaryColor,
                         thickness = 8.dp
                     )
-                ),
-                dataLabelValueFormatter = labelValueFormatter,
-//                dataLabel = rememberTextComponent()
+                )
             ),
             startAxis = VerticalAxis.rememberStart(title = "Duration"),
-            bottomAxis = HorizontalAxis.rememberBottom(title = "Session Date", valueFormatter = labelValueFormatter),
+            bottomAxis = HorizontalAxis.rememberBottom(
+                title = "Session Date",
+                valueFormatter = labelValueFormatter
+            ),
         ),
         modelProducer = modelProducer,
+        scrollState = rememberVicoScrollState(),
         modifier = modifier
     )
 

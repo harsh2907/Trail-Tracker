@@ -26,11 +26,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.rounded.Stop
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -59,7 +61,7 @@ import com.example.trailtracker.mainScreen.presentation.screens.profile.presenta
 import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.EndSessionDialog
 import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.RunningSessionScreen
 import com.example.trailtracker.mainScreen.presentation.screens.runningSession.presentation.RunningSessionViewModel
-import com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation.DemoChart
+import com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation.StatisticsChart
 import com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation.StatisticsViewModel
 import com.example.trailtracker.navigation.Screens
 import com.example.trailtracker.utils.Constants
@@ -72,6 +74,7 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreenNavigation(
     modifier: Modifier = Modifier,
@@ -155,6 +158,7 @@ fun MainScreenNavigation(
 
             // Collect overall points for the graph
             val overAllPoints by statisticsViewModel.overallPointsForGraph.collectAsStateWithLifecycle()
+            val weeklyData by statisticsViewModel.weeklyPointsForGraph.collectAsStateWithLifecycle()
 
             if (overAllPoints.isEmpty()) {
                 Box(
@@ -166,13 +170,25 @@ fun MainScreenNavigation(
             } else {
 
                 // Render the StatisticsScreen with updated line chart data
-                DemoChart(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.White)
-                        .padding(12.dp),
-                    overAllPoints = overAllPoints
-                )
+                Scaffold(
+                    topBar = {
+                        TopAppBar(
+                            title = {
+                                Text("Last Seven Days")
+                            }
+                        )
+                    }
+                ) { paddingValues ->
+                    StatisticsChart(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                            .background(Color.White)
+                            .padding(12.dp),
+                        overAllPoints = overAllPoints,
+                        weeklyData = weeklyData
+                    )
+                }
             }
 
 

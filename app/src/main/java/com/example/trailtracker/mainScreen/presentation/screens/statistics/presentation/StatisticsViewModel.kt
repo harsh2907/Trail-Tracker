@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.trailtracker.mainScreen.domain.models.RunItem
 import com.example.trailtracker.mainScreen.domain.repositories.FirebaseUserRepository
 import com.example.trailtracker.mainScreen.domain.usecases.SortRunsUseCase
-import com.example.trailtracker.mainScreen.presentation.screens.statistics.utils.DataPoint
 import com.example.trailtracker.utils.Constants
 import com.example.trailtracker.utils.SortType
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,6 +18,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
@@ -40,10 +40,6 @@ class StatisticsViewModel @Inject constructor(
             sortRunsUseCase(sortType).map { runs ->
                 try {
                     runs.associate { run ->
-                        // Mapping each RunItem to a Point for the overall graph
-//                    val yValue = mapRunMetricToYValue(sortType, run)
-//                    Point(x = run.createdAt.toFloat(), y = yValue)
-// Assuming `minCreatedAt` is the earliest createdAt value (epoch) in your data
                         val dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
 
                         val formattedDate = Constants.formatEpochToDateString(run.createdAt).let {
@@ -63,22 +59,73 @@ class StatisticsViewModel @Inject constructor(
 
 
     // Flow for the weekly graph (filtering runs from the past 7 days)
-    val weeklyPointsForGraph: StateFlow<List<DataPoint>> = _sortType
+    val weeklyPointsForGraph: StateFlow<Map<LocalDate, Float>> = _sortType
         .flatMapLatest { sortType ->
             sortRunsUseCase(sortType).map { runs ->
-                // Filter for runs in the past 7 days
-                val currentTime = System.currentTimeMillis()
-                val sevenDaysAgo = currentTime - (7 * 24 * 60 * 60 * 1000) // 7 days in milliseconds
+                try {
+                    // Filter for runs in the past 7 days
+                    val currentTime = System.currentTimeMillis()
+                    val sevenDaysAgo =
+                        currentTime - (7 * 24 * 60 * 60 * 1000) // 7 days in milliseconds
 
-                runs.filter { run -> run.createdAt >= sevenDaysAgo }
-                    .map { run ->
-                        val formattedDate = Constants.formatEpochToDateString(run.createdAt)
+                    runs.filter { run -> run.createdAt >= sevenDaysAgo }
+                        .associate { run ->
+                            val dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
+
+                            val formattedDate =
+                                Constants.formatEpochToDateString(run.createdAt).let {
+                                    LocalDate.parse(it, dateFormatter)
+                                }
+                            val yValue = mapRunMetricToYValue(sortType, run)
+
+                            formattedDate to yValue
+                        }
+                } catch (e: Exception) {
+                    Log.e("StatsVM", e.message, e)
+                    emptyMap()
+                }
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+
+    val todayPointsForGraph: StateFlow<Map<LocalDate, Float>> = _sortType
+        .flatMapLatest { sortType ->
+            sortRunsUseCase(sortType).map { runs ->
+                try {
+                    // Get the start and end of today in milliseconds
+                    val todayStart = LocalDate.now()
+                        .atStartOfDay(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli()
+
+                    val todayEnd = LocalDate.now()
+                        .plusDays(1)
+                        .atStartOfDay(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli()
+
+                    // Filter for runs created today
+                    runs.filter { run ->
+                        run.createdAt in todayStart until todayEnd
+                    }.associate { run ->
+                        val dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
+
+                        val formattedDate =
+                            Constants.formatEpochToDateString(run.createdAt).let {
+                                LocalDate.parse(it, dateFormatter)
+                            }
+
                         val yValue = mapRunMetricToYValue(sortType, run)
-                        DataPoint(x = run.createdAt.toFloat(), y = yValue)
+
+                        formattedDate to yValue
                     }
+                } catch (e: Exception) {
+                    Log.e("StatsVM", e.message, e)
+                    emptyMap()
+                }
             }
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+
 
     // Helper function to map the selected metric to y-axis value
     private fun mapRunMetricToYValue(sortType: SortType, run: RunItem): Float {
