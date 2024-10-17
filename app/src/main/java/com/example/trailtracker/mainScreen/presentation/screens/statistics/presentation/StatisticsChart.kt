@@ -170,20 +170,13 @@ fun TodayStatisticsChart(
 
     CartesianChartHost(
         rememberCartesianChart(
-            rememberLineCartesianLayer(
-//                columnProvider = ColumnCartesianLayer.ColumnProvider.series(
-//                    rememberLineComponent(
-//                        color = UiColors.secondaryColor,
-//                        thickness = 8.dp
-//                    )
-//                )
-            ),
+            rememberLineCartesianLayer(),
             startAxis = VerticalAxis.rememberStart(
                 title = "Duration",
                 tickLength = 12.dp
             ),
             bottomAxis = HorizontalAxis.rememberBottom(
-                title = "Session Time", // Change title to "Session Time"
+                title = "Session Time",
                 valueFormatter = labelValueFormatter
             ),
             marker = rememberDefaultCartesianMarker(

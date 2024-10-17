@@ -2,7 +2,6 @@ package com.example.trailtracker.mainScreen.presentation.screens
 
 import android.app.Activity
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -259,9 +258,7 @@ fun MainScreenNavigation(
 
         runNavigation(
             navController = navController,
-            navigateToHome = {
-                navController.navigateUp()
-            }
+            navigateToHome = navController::navigateUp
         )
     }
 }
@@ -410,9 +407,8 @@ fun NavGraphBuilder.runNavigation(
                 onLoading = { isLoading = true },
                 onSnapshot = { mapBitmap ->
                     if (mapBitmap == null) {
-                        Toast.makeText(context, "No Progress to save", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "No progress to save", Toast.LENGTH_SHORT).show()
                     } else {
-                        Log.e("Map", "Got our map bitmap here")
                         val runEntity = RunEntity(
                             imageBitmap = mapBitmap,
                             sessionDuration = state.sessionDuration,
