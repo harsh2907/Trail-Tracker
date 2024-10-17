@@ -4,18 +4,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.trailtracker.ui.theme.UiColors
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.marker.rememberDefaultCartesianMarker
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
+import com.patrykandpatrick.vico.compose.cartesian.rememberVicoZoomState
 import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
 import com.patrykandpatrick.vico.compose.common.component.rememberTextComponent
+import com.patrykandpatrick.vico.core.cartesian.Zoom
 import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
@@ -23,6 +29,9 @@ import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import com.patrykandpatrick.vico.core.cartesian.layer.ColumnCartesianLayer
+import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
+import com.patrykandpatrick.vico.core.common.Dimensions
+import com.patrykandpatrick.vico.core.common.Fill
 import com.patrykandpatrick.vico.core.common.data.ExtraStore
 import java.time.Instant
 import java.time.LocalDate
@@ -42,7 +51,7 @@ fun OverallStatisticsChart(
 
     LaunchedEffect(overallDataPoints) {
         modelProducer.runTransaction {
-            columnSeries { series(xToDates.keys, overallDataPoints.values) }
+            lineSeries { series(xToDates.keys, overallDataPoints.values) }
             extras { it[xToDateMapKey] = xToDates }
         }
     }
@@ -58,22 +67,32 @@ fun OverallStatisticsChart(
 
     CartesianChartHost(
         rememberCartesianChart(
-            rememberColumnCartesianLayer(
-                columnProvider = ColumnCartesianLayer.ColumnProvider.series(
-                    rememberLineComponent(
-                        color = UiColors.secondaryColor,
-                        thickness = 8.dp
+            rememberLineCartesianLayer(
+                lineProvider = LineCartesianLayer.LineProvider.series(
+                    LineCartesianLayer.rememberLine(
+                        fill = LineCartesianLayer.LineFill.single(Fill(UiColors.secondaryColor.toArgb()))
                     )
                 )
             ),
-            startAxis = VerticalAxis.rememberStart(title = "Duration"),
+            startAxis = VerticalAxis.rememberStart(
+                title = "Duration",
+                titleComponent = rememberTextComponent(
+                    color = Color.White,
+                    textSize = 16.sp,
+                    padding = Dimensions( 6f)
+                ),
+                label = rememberTextComponent(color = Color.White),
+            ),
             bottomAxis = HorizontalAxis.rememberBottom(
-                title = "Session Date",
+                label = rememberTextComponent(color = Color.White, padding = Dimensions(horizontalDp = 4f)),
                 valueFormatter = labelValueFormatter
             ),
+            marker = rememberDefaultCartesianMarker(label = rememberTextComponent())
         ),
+        zoomState = rememberVicoZoomState(initialZoom = Zoom.Content),
         modelProducer = modelProducer,
         scrollState = rememberVicoScrollState(),
+        runInitialAnimation = true,
         modifier = modifier
     )
 
