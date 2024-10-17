@@ -33,7 +33,7 @@ class StatisticsViewModel @Inject constructor(
     // Sort type that can be updated via the UI
     private val _sortType = MutableStateFlow(SortType.DURATION)
 
-    private val _selectedGraphType = MutableStateFlow(GraphType.DAILY)
+    private val _selectedGraphType = MutableStateFlow(GraphType.OVERALL)
     val selectedGraphType = _selectedGraphType.asStateFlow()
 
     fun onGraphTypeChanges(graphType: GraphType) {

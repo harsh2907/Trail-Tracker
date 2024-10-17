@@ -1,8 +1,12 @@
 package com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
@@ -14,7 +18,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.example.trailtracker.mainScreen.presentation.screens.statistics.utils.GraphType
+import com.example.trailtracker.ui.theme.UiColors
 import java.time.LocalDate
 
 @Composable
@@ -85,10 +92,19 @@ fun RenderGraph(
                 isDataSetEmpty = overallData.isEmpty(),
                 paddingValues = paddingValues,
                 chartContent = {
-                    OverallStatisticsChart(
-                        modifier = modifier,
-                        overallDataPoints = overallData
-                    )
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        OverallStatisticsChart(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(500.dp)
+                                .background(UiColors.EerieBlack)
+                                .padding(24.dp),
+                            overallDataPoints = overallData
+                        )
+                    }
                 }
             )
         }
