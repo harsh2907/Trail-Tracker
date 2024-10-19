@@ -3,6 +3,7 @@ package com.example.trailtracker.mainScreen.presentation.screens.statistics.pres
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -16,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.example.trailtracker.mainScreen.presentation.screens.statistics.utils.GraphType
 import com.example.trailtracker.ui.theme.UiColors
 import java.time.LocalDate
@@ -49,7 +51,6 @@ fun GraphSelectionMenu(
 
 @Composable
 fun RenderGraph(
-    modifier: Modifier = Modifier,
     selectedGraphType: GraphType,
     todayData: Map<Long, Float>,
     weeklyData: Map<LocalDate, Float>,
@@ -63,7 +64,11 @@ fun RenderGraph(
                 paddingValues = paddingValues,
                 chartContent = {
                     TodayStatisticsChart(
-                        modifier = modifier,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                            .background(UiColors.EerieBlack)
+                            .padding(12.dp),
                         sessionDataPoints = todayData
                     )
                 }
@@ -76,7 +81,11 @@ fun RenderGraph(
                 paddingValues = paddingValues,
                 chartContent = {
                     WeeklyStatisticsChart(
-                        modifier = modifier,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                            .background(UiColors.EerieBlack)
+                            .padding(12.dp),
                         weeklyDataPoints = weeklyData
                     )
                 }
@@ -94,8 +103,10 @@ fun RenderGraph(
                     ) {
                         OverallStatisticsChart(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .background(UiColors.EerieBlack) ,
+                                .fillMaxSize()
+                                .padding(paddingValues)
+                                .background(UiColors.EerieBlack)
+                                .padding(12.dp),
                             overallDataPoints = overallData
                         )
                     }

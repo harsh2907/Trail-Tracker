@@ -192,11 +192,6 @@ fun MainScreenNavigation(
                 }
             ) { paddingValues ->
                 RenderGraph(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .background(Color.White)
-                        .padding(12.dp),
                     selectedGraphType = selectedGraphType,
                     todayData = todayData,
                     weeklyData = weeklyData,

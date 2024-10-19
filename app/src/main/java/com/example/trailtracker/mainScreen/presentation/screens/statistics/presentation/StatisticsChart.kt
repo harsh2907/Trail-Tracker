@@ -130,18 +130,29 @@ fun WeeklyStatisticsChart(
                 columnProvider = ColumnCartesianLayer.ColumnProvider.series(
                     rememberLineComponent(
                         color = UiColors.secondaryColor,
-                        thickness = 8.dp
+                        thickness = 16.dp
                     )
                 )
             ),
-            startAxis = VerticalAxis.rememberStart(title = "Duration"),
+            startAxis = VerticalAxis.rememberStart(
+                title = "Duration",
+                titleComponent = rememberTextComponent(
+                    color = Color.White,
+                    textSize = 16.sp,
+                    padding = Dimensions( 6f)
+                ),
+                label = rememberTextComponent(color = Color.White),
+            ),
             bottomAxis = HorizontalAxis.rememberBottom(
-                title = "Session Date",
+                label = rememberTextComponent(color = Color.White, padding = Dimensions(horizontalDp = 4f)),
                 valueFormatter = labelValueFormatter
             ),
+            marker = rememberDefaultCartesianMarker(label = rememberTextComponent())
         ),
+        zoomState = rememberVicoZoomState(initialZoom = Zoom.Content),
         modelProducer = modelProducer,
         scrollState = rememberVicoScrollState(),
+        runInitialAnimation = true,
         modifier = modifier
     )
 
