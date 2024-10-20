@@ -29,7 +29,6 @@ class StatisticsViewModel @Inject constructor(
     private val sortRunsUseCase: SortRunsUseCase
 ) : ViewModel() {
 
-
     // Sort type that can be updated via the UI
     private val _sortType = MutableStateFlow(SortType.DURATION)
 
@@ -113,19 +112,13 @@ class StatisticsViewModel @Inject constructor(
                     runs.filter { run ->
                         run.createdAt in todayStart until todayEnd
                     }.associate { run ->
-//                        val dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
-
-//                        val formattedDate =
-//                            Constants.formatEpochToDateString(run.createdAt).let {
-//                                LocalDate.parse(it, dateFormatter)
-//                            }
 
                         val yValue = mapRunMetricToYValue(sortType, run)
 
                         run.createdAt to yValue
                     }
                 } catch (e: Exception) {
-                    Log.e("StatsVM", e.message, e)
+                    e.printStackTrace()
                     emptyMap()
                 }
             }
