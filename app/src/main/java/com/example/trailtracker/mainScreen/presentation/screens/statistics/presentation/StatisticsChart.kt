@@ -51,7 +51,7 @@ fun OverallStatisticsChart(
 
     LaunchedEffect(overallDataPoints) {
         modelProducer.runTransaction {
-            lineSeries { series(xToDates.keys, overallDataPoints.values) }
+            lineSeries { series(xToDates.keys, overallDataPoints.values.map { it/60.0 }) }
             extras { it[xToDateMapKey] = xToDates }
         }
     }
@@ -75,13 +75,14 @@ fun OverallStatisticsChart(
                 )
             ),
             startAxis = VerticalAxis.rememberStart(
-                title = "Duration",
+                title = "Duration (mins)",
                 titleComponent = rememberTextComponent(
                     color = Color.White,
                     textSize = 16.sp,
                     padding = Dimensions( 6f)
                 ),
                 label = rememberTextComponent(color = Color.White),
+                itemPlacer = remember { VerticalAxis.ItemPlacer.step(step = {0.5}) }
             ),
             bottomAxis = HorizontalAxis.rememberBottom(
                 label = rememberTextComponent(color = Color.White, padding = Dimensions(horizontalDp = 4f)),
@@ -110,7 +111,7 @@ fun WeeklyStatisticsChart(
 
     LaunchedEffect(weeklyDataPoints) {
         modelProducer.runTransaction {
-            columnSeries { series(xToDates.keys, weeklyDataPoints.values) }
+            columnSeries { series(xToDates.keys, weeklyDataPoints.values.map { it/60.0 }) }
             extras { it[xToDateMapKey] = xToDates }
         }
     }
@@ -135,13 +136,14 @@ fun WeeklyStatisticsChart(
                 )
             ),
             startAxis = VerticalAxis.rememberStart(
-                title = "Duration",
+                title = "Duration (mins)",
                 titleComponent = rememberTextComponent(
                     color = Color.White,
                     textSize = 16.sp,
                     padding = Dimensions( 6f)
                 ),
                 label = rememberTextComponent(color = Color.White),
+                itemPlacer = remember { VerticalAxis.ItemPlacer.step(step = {0.5}) }
             ),
             bottomAxis = HorizontalAxis.rememberBottom(
                 label = rememberTextComponent(color = Color.White, padding = Dimensions(horizontalDp = 4f)),
@@ -202,8 +204,9 @@ fun TodayStatisticsChart(
         rememberCartesianChart(
             rememberLineCartesianLayer(),
             startAxis = VerticalAxis.rememberStart(
-                title = "Duration",
-                tickLength = 12.dp
+                title = "Duration (mins)",
+                tickLength = 12.dp,
+                itemPlacer = remember { VerticalAxis.ItemPlacer.step(step = {0.5}) }
             ),
             bottomAxis = HorizontalAxis.rememberBottom(
                 title = "Session Time",
