@@ -4,6 +4,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 
 object Constants{
@@ -44,8 +45,8 @@ object Constants{
         val remainingSeconds = seconds % 60
 
         return when {
-            hours > 0 -> String.format("%d:%02d:%02d", hours, minutes, remainingSeconds)
-            else -> String.format("%d:%02d", minutes, remainingSeconds)
+            hours > 0 -> String.format(Locale.getDefault(),"%d:%02d:%02d", hours, minutes, remainingSeconds) + " mins"
+            else -> String.format(Locale.getDefault(),"%d:%02d", minutes, remainingSeconds) + " mins"
         }
     }
 

@@ -26,6 +26,7 @@ import com.example.trailtracker.utils.TrackingUtils
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -93,7 +94,10 @@ fun MainScreen(
                 .fillMaxSize()
                 .padding(paddingValues),
             navController = bottomNavController,
-            navigateToAuthScreen = navigateToAuthScreen
+            navigateToAuthScreen = {
+                MainActivity.navigateToSession.update { false }
+                navigateToAuthScreen()
+            }
         )
     }
 }
