@@ -1,5 +1,6 @@
 package com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -51,7 +52,7 @@ fun OverallStatisticsChart(
 
     LaunchedEffect(overallDataPoints) {
         modelProducer.runTransaction {
-            lineSeries { series(xToDates.keys, overallDataPoints.values.map { it/60.0 }) }
+            lineSeries { series(xToDates.keys, overallDataPoints.values.map { it / 60.0 }) }
             extras { it[xToDateMapKey] = xToDates }
         }
     }
@@ -79,13 +80,16 @@ fun OverallStatisticsChart(
                 titleComponent = rememberTextComponent(
                     color = Color.White,
                     textSize = 16.sp,
-                    padding = Dimensions( 6f)
+                    padding = Dimensions(6f)
                 ),
                 label = rememberTextComponent(color = Color.White),
-                itemPlacer = remember { VerticalAxis.ItemPlacer.step(step = {0.5}) }
+                itemPlacer = remember { VerticalAxis.ItemPlacer.step(step = { 0.5 }) }
             ),
             bottomAxis = HorizontalAxis.rememberBottom(
-                label = rememberTextComponent(color = Color.White, padding = Dimensions(horizontalDp = 4f)),
+                label = rememberTextComponent(
+                    color = Color.White,
+                    padding = Dimensions(horizontalDp = 4f)
+                ),
                 valueFormatter = labelValueFormatter
             ),
             marker = rememberDefaultCartesianMarker(label = rememberTextComponent())
@@ -111,7 +115,7 @@ fun WeeklyStatisticsChart(
 
     LaunchedEffect(weeklyDataPoints) {
         modelProducer.runTransaction {
-            columnSeries { series(xToDates.keys, weeklyDataPoints.values.map { it/60.0 }) }
+            columnSeries { series(xToDates.keys, weeklyDataPoints.values.map { it / 60.0 }) }
             extras { it[xToDateMapKey] = xToDates }
         }
     }
@@ -140,13 +144,16 @@ fun WeeklyStatisticsChart(
                 titleComponent = rememberTextComponent(
                     color = Color.White,
                     textSize = 16.sp,
-                    padding = Dimensions( 6f)
+                    padding = Dimensions(6f)
                 ),
                 label = rememberTextComponent(color = Color.White),
-                itemPlacer = remember { VerticalAxis.ItemPlacer.step(step = {0.5}) }
+                itemPlacer = remember { VerticalAxis.ItemPlacer.step(step = { 0.5 }) }
             ),
             bottomAxis = HorizontalAxis.rememberBottom(
-                label = rememberTextComponent(color = Color.White, padding = Dimensions(horizontalDp = 4f)),
+                label = rememberTextComponent(
+                    color = Color.White,
+                    padding = Dimensions(horizontalDp = 4f)
+                ),
                 valueFormatter = labelValueFormatter
             ),
             marker = rememberDefaultCartesianMarker(label = rememberTextComponent())
@@ -172,18 +179,20 @@ fun TodayStatisticsChart(
     val modelProducer = remember { CartesianChartModelProducer() }
 
     // Map the epoch time to hours (as Double)
-    val xToTimes = remember {
+    val xToTimes = remember(sessionDataPoints) {
         sessionDataPoints.keys.associateBy { epochTime ->
             val localDateTime = Instant.ofEpochMilli(epochTime)
                 .atZone(ZoneId.systemDefault())
                 .toLocalTime() // Extract LocalTime
+
             localDateTime.hour + localDateTime.minute / 60.0 // Convert to fractional hours
+
         }
     }
 
     LaunchedEffect(sessionDataPoints) {
         modelProducer.runTransaction {
-            lineSeries { series(xToTimes.keys, sessionDataPoints.values) }
+            columnSeries { series(xToTimes.keys, sessionDataPoints.values.map { it / 60.0 }) }
             extras { it[xToTimeMapKey] = xToTimes }
         }
     }
@@ -191,34 +200,52 @@ fun TodayStatisticsChart(
     // Formatter for displaying the hour on the X axis
     val labelValueFormatter = remember {
         CartesianValueFormatter { context, x: Double, _ ->
-            val epochTime = context.model.extraStore[xToTimeMapKey][x]
+            val epochTime = context.model.extraStore.getOrNull(xToTimeMapKey)?.get(x)
             val localTime = epochTime?.let {
                 Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalTime()
             } ?: LocalTime.ofSecondOfDay((x * 3600).toLong()) // Handle fallback
 
-            localTime.format(timeFormatter)
+            localTime.format(timeFormatter).also { Log.e("Label Value Formatter",epochTime.toString()) }
         }
     }
 
+
     CartesianChartHost(
         rememberCartesianChart(
-            rememberLineCartesianLayer(),
+            rememberColumnCartesianLayer(
+                columnProvider = ColumnCartesianLayer.ColumnProvider.series(
+                    rememberLineComponent(
+                        color = UiColors.secondaryColor,
+                        thickness = 16.dp
+                    )
+                )
+            ),
             startAxis = VerticalAxis.rememberStart(
                 title = "Duration (mins)",
-                tickLength = 12.dp,
-                itemPlacer = remember { VerticalAxis.ItemPlacer.step(step = {0.5}) }
+                titleComponent = rememberTextComponent(
+                    color = Color.White,
+                    textSize = 16.sp,
+                    padding = Dimensions(6f)
+                ),
+                label = rememberTextComponent(color = Color.White),
+                itemPlacer = remember { VerticalAxis.ItemPlacer.step(step = { 0.5 }) }
             ),
             bottomAxis = HorizontalAxis.rememberBottom(
-                title = "Session Time",
+                label = rememberTextComponent(
+                    color = Color.White,
+                    padding = Dimensions(horizontalDp = 4f)
+                ),
                 valueFormatter = labelValueFormatter
             ),
-            marker = rememberDefaultCartesianMarker(
-                label = rememberTextComponent()
-            )
+            marker = rememberDefaultCartesianMarker(label = rememberTextComponent())
         ),
+        zoomState = rememberVicoZoomState(initialZoom = Zoom.Content),
         modelProducer = modelProducer,
         scrollState = rememberVicoScrollState(),
+        runInitialAnimation = true,
         modifier = modifier
     )
+
+
 }
 
