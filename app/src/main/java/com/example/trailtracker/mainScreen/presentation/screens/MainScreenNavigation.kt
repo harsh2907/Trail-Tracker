@@ -12,12 +12,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -162,6 +160,7 @@ fun MainScreenNavigation(
             val overAllPoints by statisticsViewModel.overallPointsForGraph.collectAsStateWithLifecycle()
             val weeklyData by statisticsViewModel.weeklyPointsForGraph.collectAsStateWithLifecycle()
             val todayData by statisticsViewModel.todayPointsForGraph.collectAsStateWithLifecycle()
+            val currentDate by statisticsViewModel.currentDate.collectAsStateWithLifecycle()
 
             val topAppBarTitle = remember(selectedGraphType) {
                 when (selectedGraphType) {
@@ -196,7 +195,14 @@ fun MainScreenNavigation(
                     todayData = todayData,
                     weeklyData = weeklyData,
                     overallData = overAllPoints,
-                    paddingValues = paddingValues
+                    paddingValues = paddingValues,
+                    onDateForward = {
+                        statisticsViewModel.setDate(incrementDate = true)
+                    },
+                    onDateBackward = {
+                        statisticsViewModel.setDate(incrementDate = false)
+                    },
+                    currentDate = currentDate
                 )
             }
         }
