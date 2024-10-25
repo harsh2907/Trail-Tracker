@@ -54,7 +54,12 @@ fun GraphSelectionMenu(
     ) {
         GraphType.entries.forEach { type ->
             DropdownMenuItem(
-                text = { Text(text = type.name.lowercase()) },
+                text = {
+                    Text(
+                        text = type.name.lowercase()
+                            .replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+                    )
+                },
                 onClick = { onGraphTypeSelected(type) }
             )
         }
@@ -127,7 +132,7 @@ fun DailyStatisticsGraph(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                             contentDescription = "back arrow",
-                            tint = if(isForwardEnabled) Color.White else Color.Gray
+                            tint = if (isForwardEnabled) Color.White else Color.Gray
                         )
                     }
                 }

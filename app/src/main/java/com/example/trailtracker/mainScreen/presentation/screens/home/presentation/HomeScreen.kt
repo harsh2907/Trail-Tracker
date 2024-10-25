@@ -1,7 +1,6 @@
 package com.example.trailtracker.mainScreen.presentation.screens.home.presentation
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -41,7 +40,7 @@ import com.example.trailtracker.mainScreen.presentation.screens.runningSession.p
 import com.example.trailtracker.ui.theme.UiColors
 import com.example.trailtracker.utils.SortType
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     user: User,
