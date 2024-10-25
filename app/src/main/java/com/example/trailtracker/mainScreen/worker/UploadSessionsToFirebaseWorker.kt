@@ -27,15 +27,22 @@ class UploadSessionsToFirebaseWorker @AssistedInject constructor(
         unsyncedRuns.forEach { runEntity ->
             try {
                 firebaseRunRepository.uploadRunSession(runEntity)
-                runSessionRepository.upsertRun(runEntity.copy(isSynced = true))
+                    .onSuccess {
+                        runSessionRepository.upsertRun(runEntity.copy(isSynced = true))
+                        Log.d(
+                            TAG,
+                            "RunId:${runEntity.id} has been uploaded to firebase successfully"
+                        )
+                        //Clear room database for to save memory
+                        runSessionRepository.deleteAllRuns()
+                    }
+                    .onFailure {
+                        it.printStackTrace()
+                        return Result.retry()
+                    }
 
-                Log.d(
-                    "UploadSessionsToFirebaseWorker",
-                    "RunId:${runEntity.id} has been uploaded to firebase successfully"
-                )
-                //Clear room database for to save memory
-                runSessionRepository.deleteAllRuns()
             } catch (e: Exception) {
+                e.printStackTrace()
                 return Result.retry()
             }
         }
@@ -55,7 +62,8 @@ class UploadSessionsToFirebaseWorker @AssistedInject constructor(
         ): UploadSessionsToFirebaseWorker
     }
 
-    companion object{
+    companion object {
+        const val TAG = "UploadSessionsToFirebaseWorker"
         const val KEY_RESULT = "Result_Random_String"
     }
 
