@@ -3,14 +3,17 @@ package com.example.trailtracker.mainScreen.presentation.screens.home.presentati
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,7 +52,7 @@ fun HomeScreen(
     onSortTypeChanged: (SortType) -> Unit,
     navigateToSession: () -> Unit,
     onDeleteSession: (runItem: RunItem) -> Unit,
-    onRefresh:()->Unit,
+    onRefresh: () -> Unit,
     onSignOut: () -> Unit
 ) {
     var isSortMenuVisible by remember { mutableStateOf(false) }
@@ -142,46 +146,61 @@ fun HomeScreen(
             }
         }
     ) { paddingValues ->
-
-        PullToRefreshLazyColumn(
-            modifier = Modifier.padding(paddingValues),
+        PullToRefreshBox(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
             isRefreshing = state.isLoading,
-            onRefresh = onRefresh
-        ) {
-            item {
-                if (state.runSessions.isEmpty()) {
-                    Column(
-                        modifier = Modifier.fillParentMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = "No Sessions Yet",
-                            style = MaterialTheme.typography.headlineMedium,
-                        )
+            onRefresh = onRefresh,
+            contentAlignment = Alignment.Center,
 
-                        Text(
-                            text = "Try doing some sessions and see your results here!",
-                            style = MaterialTheme.typography.titleSmall,
+        ) {
+            if (state.isLoading) {
+                CircularProgressIndicator(
+                    color = UiColors.primaryColor
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    item {
+                        if (state.runSessions.isEmpty()) {
+                            Column(
+                                modifier = Modifier.fillParentMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = "No Sessions Yet",
+                                    style = MaterialTheme.typography.headlineMedium,
+                                )
+
+                                Text(
+                                    text = "Try doing some sessions and see your results here!",
+                                    style = MaterialTheme.typography.titleSmall,
+                                )
+                            }
+                        }
+                    }
+
+                    items(state.runSessions, key = { it.id }) { runItem ->
+                        RunSessionCard(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            runItem = runItem,
+                            onLongClick = {
+                                sessionToDelete = runItem
+                                showDeleteSessionDialog = true
+                            },
+                            onClick = {
+
+                            }
                         )
                     }
                 }
-            }
-
-            items(state.runSessions, key = { it.id }) { runItem ->
-                RunSessionCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    runItem = runItem,
-                    onLongClick = {
-                        sessionToDelete = runItem
-                        showDeleteSessionDialog = true
-                    },
-                    onClick = {
-
-                    }
-                )
             }
         }
     }

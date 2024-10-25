@@ -2,7 +2,6 @@ package com.example.trailtracker.mainScreen.presentation.screens.home.presentati
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.WorkManager
 import com.example.trailtracker.mainScreen.data.FirebaseRunRepository
 import com.example.trailtracker.mainScreen.domain.models.RunItem
 import com.example.trailtracker.mainScreen.domain.repositories.FirebaseUserRepository
@@ -15,15 +14,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val firebaseRunRepository: FirebaseRunRepository,
     private val firebaseUserRepository: FirebaseUserRepository,
-    private val sortRunsUseCase: SortRunsUseCase,
-    private val workManager: WorkManager
+    private val sortRunsUseCase: SortRunsUseCase
 ) : ViewModel() {
 
     private val _sortType = MutableStateFlow(SortType.DATE)
@@ -63,7 +60,15 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _allRunsState.update { it.copy(isLoading = true) }
 
-            firebaseRunRepository.getAllRunsSortedByDate().collectLatest { result ->
+            val runFlow = when (_sortType.value) {
+                SortType.DATE -> firebaseRunRepository.getAllRunsSortedByDate()
+                SortType.SPEED -> firebaseRunRepository.getAllRunsSortedBySpeed()
+                SortType.DISTANCE -> firebaseRunRepository.getAllRunsSortedByDistance()
+                SortType.DURATION -> firebaseRunRepository.getAllRunsSortedByDuration()
+                SortType.CALORIES -> firebaseRunRepository.getAllRunsSortedByCalories()
+            }
+
+            runFlow.collectLatest { result ->
                 result
                     .onSuccess { runs ->
                         delay(1000)
@@ -74,9 +79,14 @@ class HomeViewModel @Inject constructor(
                                 runSessions = runs.map { run -> run.toRunItem() })
                         }
                     }
-                    .onFailure {t->
+                    .onFailure { t ->
                         delay(1000)
-                        _allRunsState.update { it.copy(isLoading = false, error = t.message ?: "An error occurred, please refresh.") }
+                        _allRunsState.update {
+                            it.copy(
+                                isLoading = false,
+                                error = t.message ?: "An error occurred, please refresh."
+                            )
+                        }
                     }
             }
         }
