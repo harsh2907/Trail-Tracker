@@ -30,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -63,6 +64,7 @@ import com.example.trailtracker.mainScreen.presentation.screens.statistics.prese
 import com.example.trailtracker.mainScreen.presentation.screens.statistics.presentation.StatisticsViewModel
 import com.example.trailtracker.mainScreen.presentation.screens.statistics.utils.GraphType
 import com.example.trailtracker.navigation.Screens
+import com.example.trailtracker.ui.theme.UiColors
 import com.example.trailtracker.utils.Constants
 import com.example.trailtracker.utils.MapStyle
 import com.example.trailtracker.utils.SortType
@@ -186,9 +188,13 @@ fun MainScreenNavigation(
                                 },
                                 onIconClick = { isGraphSelectionVisible = true }
                             )
-                        }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = UiColors.EerieBlack
+                        )
                     )
-                }
+                },
+                containerColor = UiColors.EerieBlack
             ) { paddingValues ->
                 RenderGraph(
                     selectedGraphType = selectedGraphType,

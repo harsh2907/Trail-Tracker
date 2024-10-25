@@ -74,10 +74,13 @@ fun DailyStatisticsGraph(
         DateTimeFormatter.ofPattern("dd MMM yyyy").let { currentDate.format(it) }
     }
 
+    val isForwardEnabled = remember(currentDate) {
+        currentDate != LocalDate.now()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(UiColors.EerieBlack)
             .padding(paddingValues)
     ) {
         Box(
@@ -88,7 +91,8 @@ fun DailyStatisticsGraph(
         ) {
             ElevatedCard(
                 colors = CardDefaults.elevatedCardColors(
-                    containerColor = UiColors.EerieBlack
+                    containerColor = Color(0xff141414)
+                    //Color(0xff100C08)
                 ),
                 shape = CircleShape,
                 modifier = Modifier.fillMaxWidth(0.5f),
@@ -116,11 +120,14 @@ fun DailyStatisticsGraph(
                         color = Color.White
                     )
 
-                    IconButton(onClick = onDateForward) {
+                    IconButton(
+                        onClick = onDateForward,
+                        enabled = isForwardEnabled
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                             contentDescription = "back arrow",
-                            tint = Color.White
+                            tint = if(isForwardEnabled) Color.White else Color.Gray
                         )
                     }
                 }

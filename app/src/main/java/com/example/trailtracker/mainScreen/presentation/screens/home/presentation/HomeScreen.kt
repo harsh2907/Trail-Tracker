@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -122,7 +123,11 @@ fun HomeScreen(
                             contentDescription = "more"
                         )
                     }
-                })
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = UiColors.EerieBlack
+                )
+            )
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -168,8 +173,7 @@ fun HomeScreen(
                 RunSessionCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp)
-                        .animateItemPlacement(),
+                        .padding(12.dp),
                     runItem = runItem,
                     onLongClick = {
                         sessionToDelete = runItem
