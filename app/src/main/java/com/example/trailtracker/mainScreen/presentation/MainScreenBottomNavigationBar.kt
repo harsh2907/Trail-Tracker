@@ -25,9 +25,10 @@ sealed class Destinations(
     @DrawableRes val icon: Int,
     val route: String
 ) {
-    data object Home : Destinations("Home", R.drawable.ic_home, "Home"){
-        data object Run:Destinations("Run",0,"Run")
+    data object Home : Destinations("Home", R.drawable.ic_home, "Home") {
+        data object Run : Destinations("Run", 0, "Run")
     }
+
     data object Statistics : Destinations("Statistics", R.drawable.ic_stats, "Statistics")
     data object Profile : Destinations("Profile", R.drawable.ic_person, "Profile")
 }
@@ -45,15 +46,23 @@ fun MainScreenBottomNavigationBar(
         modifier = Modifier
             .fillMaxWidth()
             .graphicsLayer {
-                shape = ShapeDefaults.Medium.copy(bottomStart = CornerSize(0), bottomEnd = CornerSize(0))
+                shape = ShapeDefaults.Medium.copy(
+                    bottomStart = CornerSize(0),
+                    bottomEnd = CornerSize(0)
+                )
                 clip = true
             },
         containerColor = UiColors.EerieBlack
     ) {
         screens.forEach { screen ->
+            val isSelected = screen.route == currentDestination
             NavigationBarItem(
-                selected = screen.route == currentDestination,
-                onClick = { navController.navigate(screen.route) },
+                selected = isSelected,
+                onClick = {
+                    if(!isSelected){
+                        navController.navigate(screen.route)
+                    }
+                },
                 icon = {
                     Icon(
                         painter = painterResource(id = screen.icon),
